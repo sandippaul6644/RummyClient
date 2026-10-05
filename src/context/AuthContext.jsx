@@ -64,9 +64,10 @@ export const AuthProvider = ({ children }) => {
   const login = async (usernameOrEmail, password) => {
     const res = await api.post('/auth/login', { usernameOrEmail, password });
     if (res.data?.success) {
-      const { user, wallet, token } = res.data.data;
-      localStorage.setItem('nexus_token', token);
-      setToken(token);
+      const { user, wallet, accessToken, refreshToken } = res.data.data;
+      localStorage.setItem('nexus_token', accessToken);
+      if (refreshToken) localStorage.setItem('nexus_refresh_token', refreshToken);
+      setToken(accessToken);
       setUser(user);
       setWallet(wallet);
       setIsAuthModalOpen(false);
@@ -75,12 +76,15 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (username, email, password) => {
-    const res = await api.post('/auth/register', { username, email, password });
+  const register = async ({ fullName, username, email, phone, password, confirmPassword, referralCode }) => {
+    const res = await api.post('/auth/register', {
+      fullName, username, email, phone, password, confirmPassword, referralCode,
+    });
     if (res.data?.success) {
-      const { user, wallet, token } = res.data.data;
-      localStorage.setItem('nexus_token', token);
-      setToken(token);
+      const { user, wallet, accessToken, refreshToken } = res.data.data;
+      localStorage.setItem('nexus_token', accessToken);
+      if (refreshToken) localStorage.setItem('nexus_refresh_token', refreshToken);
+      setToken(accessToken);
       setUser(user);
       setWallet(wallet);
       setIsAuthModalOpen(false);
@@ -92,9 +96,10 @@ export const AuthProvider = ({ children }) => {
   const demoLogin = async (role = 'user') => {
     const res = await api.post('/auth/demo-login', { role });
     if (res.data?.success) {
-      const { user, wallet, token } = res.data.data;
-      localStorage.setItem('nexus_token', token);
-      setToken(token);
+      const { user, wallet, accessToken, refreshToken } = res.data.data;
+      localStorage.setItem('nexus_token', accessToken);
+      if (refreshToken) localStorage.setItem('nexus_refresh_token', refreshToken);
+      setToken(accessToken);
       setUser(user);
       setWallet(wallet);
       setIsAuthModalOpen(false);
@@ -105,6 +110,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('nexus_token');
+    localStorage.removeItem('nexus_refresh_token');
     setToken(null);
     setUser(null);
     setWallet(null);
