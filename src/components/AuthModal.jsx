@@ -18,6 +18,47 @@ const getPasswordStrength = (pw) => {
   return              { score, label: 'Strong', color: '#22c55e' };
 };
 
+// ── Stable module-level sub-components (MUST be outside AuthModal) ─────────
+// Defining these inside the component causes React to remount them on every
+// keystroke (new function reference each render) → input loses focus.
+
+const Label = ({ children, optional }) => (
+  <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#94a3b8', marginBottom: '6px' }}>
+    {children}
+    {optional && <span style={{ marginLeft: '6px', fontSize: '10px', color: '#475569', fontWeight: 400 }}>(Optional)</span>}
+  </label>
+);
+
+const IconInput = ({ icon: Icon, type = 'text', placeholder, value, onChange, required, minLength, maxLength, autoComplete, right }) => (
+  <div style={{ position: 'relative' }}>
+    <input
+      type={type}
+      className="glass-input"
+      style={{ width: '100%', paddingLeft: '38px', paddingRight: right ? '40px' : undefined }}
+      placeholder={placeholder}
+      value={value}
+      onChange={onChange}
+      required={required}
+      minLength={minLength}
+      maxLength={maxLength}
+      autoComplete={autoComplete}
+    />
+    <Icon size={16} style={{ position: 'absolute', left: '12px', top: '12px', color: '#64748b', pointerEvents: 'none' }} />
+    {right}
+  </div>
+);
+
+const ToggleEye = ({ show, onToggle }) => (
+  <button
+    type="button"
+    onClick={onToggle}
+    style={{ position: 'absolute', right: '12px', top: '10px', background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', display: 'flex' }}
+    tabIndex={-1}
+  >
+    {show ? <EyeOff size={16} /> : <Eye size={16} />}
+  </button>
+);
+
 export const AuthModal = () => {
   const { isAuthModalOpen, setIsAuthModalOpen, login, register, demoLogin } = useAuth();
 
@@ -105,45 +146,6 @@ export const AuthModal = () => {
     setIsRegister(!isRegister);
     resetFields();
   };
-
-  // ── Shared sub-components ─────────────────────────────────────────────────
-  const Label = ({ children, optional }) => (
-    <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#94a3b8', marginBottom: '6px' }}>
-      {children}
-      {optional && <span style={{ marginLeft: '6px', fontSize: '10px', color: '#475569', fontWeight: 400 }}>(Optional)</span>}
-    </label>
-  );
-
-  const IconInput = ({ icon: Icon, type = 'text', placeholder, value, onChange, required, minLength, maxLength, pattern, autoComplete, right }) => (
-    <div style={{ position: 'relative' }}>
-      <input
-        type={type}
-        className="glass-input"
-        style={{ width: '100%', paddingLeft: '38px', paddingRight: right ? '40px' : undefined }}
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        required={required}
-        minLength={minLength}
-        maxLength={maxLength}
-        pattern={pattern}
-        autoComplete={autoComplete}
-      />
-      <Icon size={16} style={{ position: 'absolute', left: '12px', top: '12px', color: '#64748b', pointerEvents: 'none' }} />
-      {right}
-    </div>
-  );
-
-  const ToggleEye = ({ show, onToggle }) => (
-    <button
-      type="button"
-      onClick={onToggle}
-      style={{ position: 'absolute', right: '12px', top: '10px', background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', display: 'flex' }}
-      tabIndex={-1}
-    >
-      {show ? <EyeOff size={16} /> : <Eye size={16} />}
-    </button>
-  );
 
   return (
     <div className="modal-overlay" onClick={() => { setIsAuthModalOpen(false); resetFields(); }}>
