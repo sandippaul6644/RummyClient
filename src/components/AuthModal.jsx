@@ -27,9 +27,7 @@ export const AuthModal = () => {
   const [usernameOrEmail, setUsernameOrEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
 
-  // Register fields
   const [fullName,        setFullName]        = useState('');
-  const [username,        setUsername]        = useState('');
   const [email,           setEmail]           = useState('');
   const [phone,           setPhone]           = useState('');
   const [password,        setPassword]        = useState('');
@@ -47,7 +45,7 @@ export const AuthModal = () => {
   const pwStrength = isRegister ? getPasswordStrength(password) : null;
 
   const resetFields = () => {
-    setFullName(''); setUsername(''); setEmail(''); setPhone('');
+    setFullName(''); setEmail(''); setPhone('');
     setPassword(''); setConfirmPassword(''); setReferralCode('');
     setUsernameOrEmail(''); setLoginPassword('');
     setShowPassword(false); setShowConfirmPassword(false);
@@ -72,7 +70,7 @@ export const AuthModal = () => {
     sound.playClick();
     try {
       if (isRegister) {
-        await register({ fullName, username, email, phone, password, confirmPassword, referralCode });
+        await register({ fullName, email, phone, password, confirmPassword, referralCode });
       } else {
         await login(usernameOrEmail, loginPassword);
       }
@@ -190,12 +188,6 @@ export const AuthModal = () => {
             <div>
               <Label>Full Name</Label>
               <IconInput icon={User} placeholder="e.g. Rahul Sharma" value={fullName} onChange={e => setFullName(e.target.value)} required minLength={2} maxLength={100} autoComplete="name" />
-            </div>
-
-            {/* Username */}
-            <div>
-              <Label>Username</Label>
-              <IconInput icon={User} placeholder="e.g. LuckyAce (letters & numbers)" value={username} onChange={e => setUsername(e.target.value)} required minLength={3} maxLength={30} autoComplete="username" />
             </div>
 
             {/* Email */}

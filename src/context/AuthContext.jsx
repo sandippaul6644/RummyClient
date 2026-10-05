@@ -76,9 +76,9 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async ({ fullName, username, email, phone, password, confirmPassword, referralCode }) => {
+  const register = async ({ fullName, email, phone, password, confirmPassword, referralCode }) => {
     const res = await api.post('/auth/register', {
-      fullName, username, email, phone, password, confirmPassword, referralCode,
+      fullName, email, phone, password, confirmPassword, referralCode,
     });
     if (res.data?.success) {
       const { user, wallet, accessToken, refreshToken } = res.data.data;
