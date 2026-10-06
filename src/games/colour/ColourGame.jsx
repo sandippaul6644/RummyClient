@@ -1,707 +1,478 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { socket } from '../../services/socket.js';
 import { api } from '../../services/api.js';
 import { sound } from '../../utils/sound.js';
-import { ProvablyFairModal } from '../../components/ProvablyFairModal.jsx';
-import { ShieldCheck, History, Flame, Coins, Sparkles } from 'lucide-react';
+import { ShieldCheck, History, RefreshCw, CheckCircle, Clock } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
+// ── Color helpers ─────────────────────────────────────────────────────────────
+const COLOR_GRADIENT = {
+  RED:    'linear-gradient(135deg, #ff4b63 0%, #ef4444 100%)',
+  GREEN:  'linear-gradient(135deg, #00f59b 0%, #059669 100%)',
+  VIOLET: 'linear-gradient(135deg, #ff4ef9 0%, #a855f7 100%)',
+};
+
+const getResultGradient = (colors = []) => {
+  const c = colors.map(x => x.toUpperCase());
+  if (c.includes('RED')   && c.includes('VIOLET')) return 'linear-gradient(135deg, #ff4b63 50%, #d946ef 50%)';
+  if (c.includes('GREEN') && c.includes('VIOLET')) return 'linear-gradient(135deg, #00f59b 50%, #d946ef 50%)';
+  if (c.includes('GREEN'))  return COLOR_GRADIENT.GREEN;
+  if (c.includes('RED'))    return COLOR_GRADIENT.RED;
+  if (c.includes('VIOLET')) return COLOR_GRADIENT.VIOLET;
+  return '#6366f1';
+};
+
+const getNumberColors = (n) => {
+  const str = String(n);
+  if (str === '0') return ['RED', 'VIOLET'];
+  if (str === '5') return ['GREEN', 'VIOLET'];
+  if (['1','3','7','9'].includes(str)) return ['GREEN'];
+  return ['RED'];
+};
+
+const CHIPS = ['1','5','10','25','50','100','500'];
+const CHIP_THEMES = {
+  '1':   { bg: 'linear-gradient(135deg,#64748b,#334155)', border: 'rgba(148,163,184,0.6)', color: '#f8fafc' },
+  '5':   { bg: 'linear-gradient(135deg,#ef4444,#b91c1c)', border: 'rgba(248,113,113,0.8)', color: '#fff' },
+  '10':  { bg: 'linear-gradient(135deg,#3b82f6,#1d4ed8)', border: 'rgba(96,165,250,0.8)',  color: '#fff' },
+  '25':  { bg: 'linear-gradient(135deg,#10b981,#047857)', border: 'rgba(52,211,153,0.8)',  color: '#fff' },
+  '50':  { bg: 'linear-gradient(135deg,#f59e0b,#b45309)', border: 'rgba(251,191,36,0.8)',  color: '#fff' },
+  '100': { bg: 'linear-gradient(135deg,#8b5cf6,#6d28d9)', border: 'rgba(192,132,252,0.8)', color: '#fff' },
+  '500': { bg: 'linear-gradient(135deg,#0f172a,#1e1b4b)', border: 'rgba(251,191,36,0.9)',  color: '#fcd34d' },
+};
+
+// ── Main component ─────────────────────────────────────────────────────────────
 export const ColourGame = () => {
   const { user, wallet, refreshWallet, setIsAuthModalOpen } = useAuth();
-  const [roundNumber, setRoundNumber] = useState(1000);
-  const [remainingSec, setRemainingSec] = useState(30);
+
+  // Round state
+  const [roundId,       setRoundId]       = useState(null);
+  const [roundNumber,   setRoundNumber]   = useState(null);
+  const [roundStatus,   setRoundStatus]   = useState('OPEN');
+  const [betCloseTime,  setBetCloseTime]  = useState(null);
+  const [serverSeedHash,setServerSeedHash]= useState('');
+  const [remainingSec,  setRemainingSec]  = useState(30);
   const [isBettingOpen, setIsBettingOpen] = useState(true);
-  const [serverSeedHash, setServerSeedHash] = useState('');
-  const [serverSeed, setServerSeed] = useState('');
-  const [history, setHistory] = useState([]);
-  const [selectedBetType, setSelectedBetType] = useState(null);
-  const [betAmount, setBetAmount] = useState('10');
-  const [liveBets, setLiveBets] = useState([]);
-  const [myBets, setMyBets] = useState([]);
-  const [lastWinningResult, setLastWinningResult] = useState(null);
-  const [isFairModalOpen, setIsFairModalOpen] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [alertMsg, setAlertMsg] = useState('');
-  const [activeBetTab, setActiveBetTab] = useState('live');
 
-  useEffect(() => {
-    const fetchGame = async () => {
-      try {
-        const res = await api.get('/games/colour');
-        if (res.data?.success) {
-          const { currentRound, history: hist } = res.data.data;
-          if (currentRound) {
-            setRoundNumber(currentRound.roundNumber);
-            setServerSeedHash(currentRound.serverSeedHash);
-            setRemainingSec(res.data.data.remainingSec || 30);
-            setIsBettingOpen(currentRound.status === 'betting');
-          }
-          if (hist) setHistory(hist);
+  // Result state
+  const [lastResult,    setLastResult]    = useState(null);
+  const [revealedSeed,  setRevealedSeed]  = useState(null);
+  const [history,       setHistory]       = useState([]);
+  const [myBets,        setMyBets]        = useState([]);
+  const [liveBets,      setLiveBets]      = useState([]);
+
+  // UI state
+  const [selectedBet,   setSelectedBet]   = useState(null);
+  const [betAmount,     setBetAmount]      = useState('10');
+  const [submitting,    setSubmitting]     = useState(false);
+  const [alertMsg,      setAlertMsg]       = useState('');
+  const [alertError,    setAlertError]     = useState(false);
+  const [activeTab,     setActiveTab]      = useState('live');
+  const [showVerify,    setShowVerify]     = useState(false);
+  const [loadingHistory,setLoadingHistory] = useState(false);
+
+  const countdownRef = useRef(null);
+
+  // ── Load initial data ────────────────────────────────────────────────────
+  const loadGame = useCallback(async () => {
+    try {
+      const [gameRes, histRes] = await Promise.all([
+        api.get('/games/colour'),
+        api.get('/games/colour/history?limit=20'),
+      ]);
+
+      if (gameRes.data?.success) {
+        const { currentRound } = gameRes.data.data;
+        if (currentRound) {
+          setRoundId(currentRound.roundId);
+          setRoundNumber(currentRound.roundNumber);
+          setRoundStatus(currentRound.status);
+          setServerSeedHash(currentRound.serverSeedHash);
+          setBetCloseTime(currentRound.betCloseTime);
+          setIsBettingOpen(currentRound.status === 'OPEN');
+          setRemainingSec(currentRound.remainingSec || 0);
         }
-      } catch (err) {
-        console.error('Error fetching colour game:', err);
       }
+
+      if (histRes.data?.success) setHistory(histRes.data.data || []);
+    } catch (err) { console.error('[ColourGame] Load failed:', err.message); }
+  }, []);
+
+  const loadMyBets = useCallback(async () => {
+    if (!user) return;
+    try {
+      const res = await api.get('/games/colour/my-bets?limit=30');
+      if (res.data?.success) setMyBets(res.data.data?.bets || []);
+    } catch {}
+  }, [user]);
+
+  // ── Client-side countdown from betCloseTime ──────────────────────────────
+  useEffect(() => {
+    if (countdownRef.current) clearInterval(countdownRef.current);
+    if (!betCloseTime) return;
+
+    const tick = () => {
+      const rem = Math.max(0, Math.ceil((new Date(betCloseTime) - Date.now()) / 1000));
+      setRemainingSec(rem);
+      setIsBettingOpen(rem > 0);
     };
+    tick();
+    countdownRef.current = setInterval(tick, 500);
+    return () => clearInterval(countdownRef.current);
+  }, [betCloseTime]);
 
-    fetchGame();
-
+  // ── Socket event handlers ─────────────────────────────────────────────────
+  useEffect(() => {
+    loadGame();
     socket.emit('game:join', { gameSlug: 'colour' });
 
-    socket.on('colour:round_start', (data) => {
+    // New round opened
+    socket.on('colour:round:open', (data) => {
+      setRoundId(data.roundId);
       setRoundNumber(data.roundNumber);
+      setRoundStatus('OPEN');
       setServerSeedHash(data.serverSeedHash);
-      setRemainingSec(data.totalDurationSec || 30);
+      setBetCloseTime(data.betCloseTime);
       setIsBettingOpen(true);
       setLiveBets([]);
-      setLastWinningResult(null);
-      sound.playBeep(true);
+      setLastResult(null);
+      setRevealedSeed(null);
+      setShowVerify(false);
+      sound.playBeep && sound.playBeep(true);
     });
 
-    socket.on('colour:tick', (data) => {
-      setRemainingSec(data.remainingSec);
-      setIsBettingOpen(data.isBettingOpen);
+    // Round created (shows hash before open)
+    socket.on('colour:round:created', (data) => {
+      setServerSeedHash(data.serverSeedHash);
+    });
+
+    // Server tick (backup countdown)
+    socket.on('colour:round:tick', (data) => {
       if (data.remainingSec <= 5 && data.remainingSec > 0) {
-        sound.playBeep(false);
+        sound.playBeep && sound.playBeep(false);
       }
     });
 
-    socket.on('colour:betting_closed', () => {
+    // Round closed — no more bets
+    socket.on('colour:round:closed', () => {
       setIsBettingOpen(false);
+      setRoundStatus('CLOSED');
     });
 
-    socket.on('colour:new_bet', (bet) => {
-      setLiveBets((prev) => [bet, ...prev.slice(0, 15)]);
+    // Result announced
+    socket.on('colour:round:result', (data) => {
+      const res = data.result || data.resultData;
+      setLastResult(res);
+      setRoundStatus('RESULT_GENERATED');
+
+      if (res?.colors) {
+        try {
+          confetti({ particleCount: 65, spread: 80, origin: { y: 0.45 },
+            colors: ['#00f59b', '#d946ef', '#ff4b63', '#ffe066'] });
+        } catch {}
+        sound.playWin && sound.playWin();
+      }
     });
 
-    socket.on('colour:round_result', (data) => {
-      setLastWinningResult(data.resultData);
-      setServerSeed(data.serverSeed);
-      setHistory((prev) => [
+    // Round fully settled — reveal seed
+    socket.on('colour:round:settled', (data) => {
+      setRoundStatus('SETTLED');
+      setRevealedSeed(data.serverSeed || null);
+      // Update history
+      setHistory(prev => [
         {
-          roundNumber: data.roundNumber,
-          result: data.resultData,
-          serverSeed: data.serverSeed,
+          roundId:        data.roundId,
+          roundNumber:    data.roundNumber,
+          result:         data.result,
           serverSeedHash: data.serverSeedHash,
         },
         ...prev.slice(0, 19),
       ]);
-      sound.playWin();
-      try {
-        confetti({
-          particleCount: 65,
-          spread: 80,
-          origin: { y: 0.45 },
-          colors: ['#00f59b', '#d946ef', '#ff4b63', '#ffe066']
-        });
-      } catch {}
       refreshWallet();
+      loadMyBets();
+    });
+
+    // Someone placed a bet
+    socket.on('colour:bet:placed', (bet) => {
+      setLiveBets(prev => [bet, ...prev.slice(0, 19)]);
     });
 
     return () => {
       socket.emit('game:leave', { gameSlug: 'colour' });
-      socket.off('colour:round_start');
-      socket.off('colour:tick');
-      socket.off('colour:betting_closed');
-      socket.off('colour:new_bet');
-      socket.off('colour:round_result');
+      ['colour:round:open','colour:round:created','colour:round:tick',
+       'colour:round:closed','colour:round:result','colour:round:settled',
+       'colour:bet:placed',
+       // Legacy events (backward compat while old engine still referenced)
+       'colour:round_start','colour:tick','colour:betting_closed',
+       'colour:new_bet','colour:round_result',
+      ].forEach(ev => socket.off(ev));
     };
-  }, [refreshWallet]);
+  }, [loadGame, loadMyBets, refreshWallet]);
 
+  // Load my bets when user logs in
+  useEffect(() => { if (user) loadMyBets(); }, [user, loadMyBets]);
+
+  // ── Bet placement ─────────────────────────────────────────────────────────
   const handlePlaceBet = async () => {
-    if (!user) {
-      setIsAuthModalOpen(true);
-      return;
-    }
-    if (!selectedBetType) {
-      setAlertMsg('Please select a color or number first!');
-      return;
-    }
+    if (!user) { setIsAuthModalOpen(true); return; }
+    if (!selectedBet) { setAlert('Select a colour or number first', true); return; }
+
     const num = Number(betAmount);
-    if (isNaN(num) || num <= 0) {
-      setAlertMsg('Enter a valid bet amount');
-      return;
-    }
-    if (wallet && num > Number(wallet.balance)) {
-      setAlertMsg('Insufficient wallet balance! Please deposit demo funds.');
-      return;
-    }
+    if (isNaN(num) || num <= 0) { setAlert('Enter a valid bet amount', true); return; }
+    if (wallet && num > Number(wallet.balance)) { setAlert('Insufficient balance', true); return; }
+    if (!isBettingOpen) { setAlert('Betting is closed for this round', true); return; }
 
     setSubmitting(true);
     setAlertMsg('');
-    sound.playClick();
+    sound.playClick && sound.playClick();
 
     try {
-      const res = await api.post('/games/colour/actions', {
-        amount: num,
-        selection: selectedBetType,
+      const res = await api.post('/games/colour/bets', {
+        prediction:     selectedBet,
+        amount:         num,
+        idempotencyKey: `${user._id || user.id}:${roundId}:${selectedBet}:${Date.now()}`,
       });
 
       if (res.data?.success) {
-        sound.playCashout();
-        setMyBets((prev) => [res.data.data.bet, ...prev]);
+        sound.playCashout && sound.playCashout();
+        setAlert(`₹${num.toFixed(0)} on ${selectedBet}! ✓`, false);
+        setMyBets(prev => [res.data.data, ...prev]);
         refreshWallet();
-        setAlertMsg(`Bet of ₹${num.toFixed(2)} placed on ${String(selectedBetType).toUpperCase()}!`);
-        setTimeout(() => setAlertMsg(''), 3000);
       }
     } catch (err) {
-      setAlertMsg(err.response?.data?.message || err.message || 'Failed to place bet');
+      setAlert(err.response?.data?.message || 'Bet failed. Please retry.', true);
     } finally {
       setSubmitting(false);
     }
   };
 
-  const chips = ['1', '5', '10', '25', '50', '100', '500'];
-
-  const chipThemes = {
-    '1': { bg: 'linear-gradient(135deg, #64748b 0%, #334155 100%)', border: 'rgba(148, 163, 184, 0.6)', color: '#f8fafc', glow: 'rgba(148, 163, 184, 0.4)' },
-    '5': { bg: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)', border: 'rgba(248, 113, 113, 0.8)', color: '#ffffff', glow: 'rgba(239, 68, 68, 0.5)' },
-    '10': { bg: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)', border: 'rgba(96, 165, 250, 0.8)', color: '#ffffff', glow: 'rgba(59, 130, 246, 0.5)' },
-    '25': { bg: 'linear-gradient(135deg, #10b981 0%, #047857 100%)', border: 'rgba(52, 211, 153, 0.8)', color: '#ffffff', glow: 'rgba(16, 185, 129, 0.5)' },
-    '50': { bg: 'linear-gradient(135deg, #f59e0b 0%, #b45309 100%)', border: 'rgba(251, 191, 36, 0.8)', color: '#ffffff', glow: 'rgba(245, 158, 11, 0.5)' },
-    '100': { bg: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)', border: 'rgba(192, 132, 252, 0.8)', color: '#ffffff', glow: 'rgba(139, 92, 246, 0.5)' },
-    '500': { bg: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)', border: 'rgba(251, 191, 36, 0.9)', color: '#fcd34d', glow: 'rgba(245, 158, 11, 0.6)' },
+  const setAlert = (msg, isError) => {
+    setAlertMsg(msg);
+    setAlertError(isError);
+    setTimeout(() => setAlertMsg(''), 3500);
   };
 
-  const getColorClass = (colors) => {
-    if (!colors) return '#64748b';
-    if (colors.includes('violet') && colors.includes('red')) return 'linear-gradient(135deg, #ff4b63 50%, #d946ef 50%)';
-    if (colors.includes('violet') && colors.includes('green')) return 'linear-gradient(135deg, #00f59b 50%, #d946ef 50%)';
-    if (colors.includes('green')) return 'linear-gradient(135deg, #00f59b 0%, #059669 100%)';
-    if (colors.includes('red')) return 'linear-gradient(135deg, #ff4b63 0%, #ef4444 100%)';
-    if (colors.includes('violet')) return 'linear-gradient(135deg, #ff4ef9 0%, #a855f7 100%)';
-    return '#6366f1';
+  // ── Number button style ───────────────────────────────────────────────────
+  const getNumStyle = (n, isSelected) => {
+    const colors = getNumberColors(n);
+    const isPurple = colors.includes('VIOLET');
+    const isGreen  = colors.includes('GREEN') && !isPurple;
+    const baseGrad = isPurple && colors.includes('RED')   ? `linear-gradient(135deg, #ff4b63 50%, #d946ef 50%)`
+                   : isPurple && colors.includes('GREEN') ? `linear-gradient(135deg, #00f59b 50%, #d946ef 50%)`
+                   : isGreen ? COLOR_GRADIENT.GREEN
+                   : COLOR_GRADIENT.RED;
+
+    return isSelected
+      ? { background: baseGrad, border: '2px solid #fff', boxShadow: '0 0 20px rgba(255,255,255,0.3)', color: '#fff', transform: 'scale(1.08)', transition: 'all 0.15s' }
+      : { background: 'rgba(255,255,255,0.05)', border: '1.5px solid rgba(255,255,255,0.15)', color: '#cbd5e1', transition: 'all 0.15s' };
   };
 
-  const getNumberStyle = (n, isSelected) => {
-    if (isSelected) {
-      if (n === '0') {
-        return {
-          background: 'linear-gradient(135deg, #ff4b63 50%, #d946ef 50%)',
-          border: '2px solid #ffffff',
-          boxShadow: '0 0 22px rgba(255, 75, 99, 0.8), 0 0 22px rgba(217, 70, 239, 0.8)',
-          color: '#ffffff',
-          transform: 'scale(1.08)'
-        };
-      }
-      if (n === '5') {
-        return {
-          background: 'linear-gradient(135deg, #00f59b 50%, #d946ef 50%)',
-          border: '2px solid #ffffff',
-          boxShadow: '0 0 22px rgba(0, 245, 155, 0.8), 0 0 22px rgba(217, 70, 239, 0.8)',
-          color: '#ffffff',
-          transform: 'scale(1.08)'
-        };
-      }
-      if (['1', '3', '7', '9'].includes(n)) {
-        return {
-          background: 'linear-gradient(145deg, #00ffaa 0%, #10b981 50%, #047857 100%)',
-          border: '2px solid #ffffff',
-          boxShadow: '0 0 22px rgba(0, 245, 155, 0.85)',
-          color: '#ffffff',
-          transform: 'scale(1.08)'
-        };
-      }
-      return {
-        background: 'linear-gradient(145deg, #ff6b7e 0%, #ef4444 50%, #991b1b 100%)',
-        border: '2px solid #ffffff',
-        boxShadow: '0 0 22px rgba(255, 75, 99, 0.85)',
-        color: '#ffffff',
-        transform: 'scale(1.08)'
-      };
-    }
+  const countdown = remainingSec;
+  const countdownColor = countdown <= 5 ? '#f87171' : countdown <= 10 ? '#fbbf24' : '#34d399';
+  const timerPercent   = Math.min(100, (countdown / 25) * 100);
 
-    // Unselected with distinct gaming color cues
-    if (n === '0') {
-      return {
-        background: 'linear-gradient(135deg, rgba(255, 75, 99, 0.25) 50%, rgba(217, 70, 239, 0.25) 50%)',
-        border: '1.5px solid rgba(217, 70, 239, 0.65)',
-        color: '#ffffff'
-      };
-    }
-    if (n === '5') {
-      return {
-        background: 'linear-gradient(135deg, rgba(0, 245, 155, 0.25) 50%, rgba(217, 70, 239, 0.25) 50%)',
-        border: '1.5px solid rgba(0, 245, 155, 0.65)',
-        color: '#ffffff'
-      };
-    }
-    if (['1', '3', '7', '9'].includes(n)) {
-      return {
-        background: 'linear-gradient(145deg, rgba(0, 245, 155, 0.16) 0%, rgba(5, 150, 105, 0.08) 100%)',
-        border: '1.5px solid rgba(0, 245, 155, 0.45)',
-        color: '#00f59b'
-      };
-    }
-    return {
-      background: 'linear-gradient(145deg, rgba(255, 75, 99, 0.16) 0%, rgba(220, 38, 38, 0.08) 100%)',
-      border: '1.5px solid rgba(255, 75, 99, 0.45)',
-      color: '#ff4b63'
-    };
-  };
-
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="colour-game-container">
-      {/* 1. Top Status & Countdown Card */}
-      <div className="colour-top-card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{
-              fontSize: '12px',
-              fontWeight: 900,
-              background: 'linear-gradient(135deg, #a78bfa 0%, #ec4899 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              textTransform: 'uppercase',
-              letterSpacing: '0.6px'
-            }}>
-              ROUND #{roundNumber}
-            </span>
-            <span style={{
-              fontSize: '10px',
-              padding: '3px 9px',
-              borderRadius: '12px',
-              background: isBettingOpen ? 'linear-gradient(135deg, rgba(0, 245, 155, 0.25) 0%, rgba(5, 150, 105, 0.15) 100%)' : 'linear-gradient(135deg, rgba(239, 68, 68, 0.25) 0%, rgba(185, 28, 28, 0.15) 100%)',
-              border: isBettingOpen ? '1px solid rgba(0, 245, 155, 0.5)' : '1px solid rgba(239, 68, 68, 0.5)',
-              color: isBettingOpen ? '#00f59b' : '#f87171',
-              fontWeight: 800,
-              boxShadow: isBettingOpen ? '0 0 10px rgba(0, 245, 155, 0.3)' : 'none'
-            }}>
-              {isBettingOpen ? '● BETTING OPEN' : '🔒 CALCULATING'}
-            </span>
-          </div>
+    <div className="colour-game-container" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
 
-          <button
-            type="button"
-            onClick={() => { sound.playClick(); setIsFairModalOpen(true); }}
-            style={{
-              background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(217, 70, 239, 0.1) 100%)',
-              border: '1px solid rgba(168, 85, 247, 0.45)',
-              color: '#c084fc',
-              padding: '4px 10px',
-              borderRadius: '8px',
-              fontSize: '11px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '5px',
-              boxShadow: '0 2px 8px rgba(139, 92, 246, 0.2)'
-            }}
-          >
-            <ShieldCheck size={13} /> Provably Fair
-          </button>
-        </div>
-
-        {/* Timer & Result Box */}
-        <div className="colour-timer-box">
-          {/* Circular Countdown Ring with Gradient */}
-          <div style={{ position: 'relative', width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <svg width="60" height="60" viewBox="0 0 100 100">
-              <defs>
-                <linearGradient id="timerNeonGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#00f59b" />
-                  <stop offset="50%" stopColor="#d946ef" />
-                  <stop offset="100%" stopColor="#6366f1" />
-                </linearGradient>
-              </defs>
-              <circle cx="50" cy="50" r="42" stroke="rgba(255,255,255,0.06)" strokeWidth="9" fill="transparent" />
-              <circle
-                cx="50"
-                cy="50"
-                r="42"
-                stroke={remainingSec <= 5 ? '#ff4b63' : 'url(#timerNeonGrad)'}
-                strokeWidth="9"
-                fill="transparent"
-                strokeDasharray="264"
-                strokeDashoffset={264 - (264 * remainingSec) / 30}
-                strokeLinecap="round"
-                style={{
-                  transition: 'stroke-dashoffset 1s linear, stroke 0.3s',
-                  filter: remainingSec <= 5 ? 'drop-shadow(0 0 8px rgba(255, 75, 99, 0.8))' : 'drop-shadow(0 0 6px rgba(217, 70, 239, 0.6))'
-                }}
-              />
-            </svg>
-            <div style={{ position: 'absolute', textAlign: 'center' }}>
-              <div className="font-mono" style={{ fontSize: '16px', fontWeight: 900, color: remainingSec <= 5 ? '#ff4b63' : '#ffffff', textShadow: remainingSec <= 5 ? '0 0 10px rgba(255,75,99,0.8)' : '0 0 8px rgba(255,255,255,0.4)' }}>
-                0:{remainingSec < 10 ? `0${remainingSec}` : remainingSec}
-              </div>
-              <div style={{ fontSize: '7.5px', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.4px' }}>TIMER</div>
-            </div>
-          </div>
-
-          {/* Outcome or Status */}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            {lastWinningResult ? (
-              <div style={{
-                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.22) 0%, rgba(139, 92, 246, 0.15) 100%)',
-                border: '1.5px solid rgba(0, 245, 155, 0.55)',
-                boxShadow: '0 0 20px rgba(0, 245, 155, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.3)',
-                borderRadius: '12px',
-                padding: '8px 12px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                animation: 'winnerPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)'
-              }}>
-                <div style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '50%',
-                  background: getColorClass(lastWinningResult.colors),
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '17px',
-                  fontWeight: 900,
-                  color: '#ffffff',
-                  flexShrink: 0,
-                  boxShadow: '0 0 16px rgba(0,0,0,0.6), inset 0 1px 2px rgba(255,255,255,0.5)',
-                  border: '2px solid rgba(255, 255, 255, 0.6)'
-                }}>
-                  {lastWinningResult.number}
-                </div>
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: '10px', color: '#00f59b', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <Sparkles size={11} /> WINNING RESULT
-                  </div>
-                  <div style={{ fontSize: '13px', fontWeight: 900, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    #{lastWinningResult.number} — {lastWinningResult.colors.map((c) => c.toUpperCase()).join(' & ')}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div>
-                <div style={{ fontSize: '14px', fontWeight: 900, color: '#f8fafc', letterSpacing: '-0.2px' }}>
-                  {isBettingOpen ? '⚡ Fast 30s Prediction' : 'Evaluating Winning Number...'}
-                </div>
-                <div style={{ fontSize: '11.5px', color: '#a78bfa', marginTop: '2px', fontWeight: 600 }}>
-                  {isBettingOpen ? 'Select Colors (2x/4.5x) or Numbers (9x)' : 'Next round starts immediately...'}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* History Beads */}
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '6px', fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
-            <History size={12} color="#a78bfa" /> Recent 16 Outcomes
-          </div>
-          <div className="colour-history-strip">
-            {history.length > 0 ? (
-              history.slice(0, 16).map((h, i) => (
-                <div
-                  key={i}
-                  className="colour-bead"
-                  style={{ background: getColorClass(h.result?.colors) }}
-                  title={`Round #${h.roundNumber} - Result: ${h.result?.number}`}
-                >
-                  {h.result?.number ?? '?'}
-                </div>
-              ))
-            ) : (
-              <span style={{ color: '#64748b', fontSize: '11px' }}>Syncing history...</span>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* 2. Main Betting Arena (Colors, Numbers, Wager Amount & CONFIRM BET BUTTON) */}
-      <div className="colour-betting-arena">
-        {alertMsg && (
-          <div style={{
-            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.25) 0%, rgba(217, 70, 239, 0.15) 100%)',
-            border: '1.5px solid rgba(168, 85, 247, 0.5)',
-            color: '#e9d5ff',
-            padding: '8px 12px',
-            borderRadius: '10px',
-            fontSize: '12px',
-            fontWeight: 700,
-            boxShadow: '0 4px 14px rgba(139, 92, 246, 0.3)'
+      {/* ── Top status bar ── */}
+      <div className="colour-top-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span style={{ fontSize: '12px', fontWeight: 900, background: 'linear-gradient(135deg,#a78bfa,#ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', textTransform: 'uppercase' }}>
+            ROUND #{roundNumber ?? '—'}
+          </span>
+          <span style={{ fontSize: '10px', padding: '3px 9px', borderRadius: '12px', fontWeight: 800,
+            background: isBettingOpen ? 'rgba(0,245,155,0.15)' : 'rgba(239,68,68,0.15)',
+            border: `1px solid ${isBettingOpen ? 'rgba(0,245,155,0.5)' : 'rgba(239,68,68,0.4)'}`,
+            color: isBettingOpen ? '#00f59b' : '#f87171',
           }}>
-            {alertMsg}
-          </div>
-        )}
-
-        {/* Color Buttons */}
-        <div>
-          <div style={{ fontSize: '11px', fontWeight: 800, color: '#a78bfa', marginBottom: '6px', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
-            1. Select Color
-          </div>
-          <div className="colour-color-grid">
-            <button
-              type="button"
-              onClick={() => { sound.playClick(); setSelectedBetType('green'); }}
-              disabled={!isBettingOpen}
-              className={`colour-btn-choice green ${selectedBetType === 'green' ? 'active' : ''}`}
-            >
-              <div style={{ fontSize: '15px', fontWeight: 900, letterSpacing: '0.5px' }}>GREEN</div>
-              <div style={{
-                fontSize: '10.5px',
-                fontWeight: 800,
-                background: 'rgba(0,0,0,0.3)',
-                padding: '2px 8px',
-                borderRadius: '10px',
-                marginTop: '3px'
-              }}>
-                2x Payout
-              </div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => { sound.playClick(); setSelectedBetType('violet'); }}
-              disabled={!isBettingOpen}
-              className={`colour-btn-choice violet ${selectedBetType === 'violet' ? 'active' : ''}`}
-            >
-              <div style={{ fontSize: '15px', fontWeight: 900, letterSpacing: '0.5px' }}>VIOLET</div>
-              <div style={{
-                fontSize: '10.5px',
-                fontWeight: 800,
-                background: 'rgba(0,0,0,0.3)',
-                padding: '2px 8px',
-                borderRadius: '10px',
-                marginTop: '3px'
-              }}>
-                4.5x Payout
-              </div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => { sound.playClick(); setSelectedBetType('red'); }}
-              disabled={!isBettingOpen}
-              className={`colour-btn-choice red ${selectedBetType === 'red' ? 'active' : ''}`}
-            >
-              <div style={{ fontSize: '15px', fontWeight: 900, letterSpacing: '0.5px' }}>RED</div>
-              <div style={{
-                fontSize: '10.5px',
-                fontWeight: 800,
-                background: 'rgba(0,0,0,0.3)',
-                padding: '2px 8px',
-                borderRadius: '10px',
-                marginTop: '3px'
-              }}>
-                2x Payout
-              </div>
-            </button>
-          </div>
+            {isBettingOpen ? '● BETTING OPEN' : roundStatus === 'SETTLED' ? '✓ SETTLED' : '🔒 CALCULATING'}
+          </span>
         </div>
 
-        {/* Number Buttons (0-9) */}
-        <div>
-          <div style={{ fontSize: '11px', fontWeight: 800, color: '#a78bfa', marginBottom: '6px', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
-            2. Or Select Number (9x Payout)
-          </div>
-          <div className="colour-numbers-grid">
-            {['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].map((n) => {
-              const isSelected = selectedBetType === n;
-              return (
-                <button
-                  key={n}
-                  type="button"
-                  onClick={() => { sound.playClick(); setSelectedBetType(n); }}
-                  disabled={!isBettingOpen}
-                  className={`colour-num-btn ${isSelected ? 'active' : ''}`}
-                  style={getNumberStyle(n, isSelected)}
-                >
-                  <div style={{ fontSize: '16px', lineHeight: 1 }}>{n}</div>
-                  <div style={{ fontSize: '9px', opacity: 0.85, fontWeight: 700, marginTop: '2px' }}>9x</div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Wager Input, Chips & CONFIRM BET BUTTON */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '10px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
-            <label style={{ fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
-              Wager Amount (₹ INR)
-            </label>
-            <span style={{ color: '#94a3b8' }}>
-              Est Return: <strong style={{ color: '#00f59b', fontSize: '13.5px', textShadow: '0 0 10px rgba(0, 245, 155, 0.5)' }}>
-                ₹{selectedBetType ? (
-                  Number(selectedBetType) >= 0 ? (Number(betAmount || 0) * 9).toFixed(2) :
-                  selectedBetType === 'violet' ? (Number(betAmount || 0) * 4.5).toFixed(2) :
-                  (Number(betAmount || 0) * 2).toFixed(2)
-                ) : '0.00'}
-              </strong>
-            </span>
-          </div>
-
-          <div className="colour-wager-row">
-            <div style={{ position: 'relative', width: '95px', flexShrink: 0 }}>
-              <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#a78bfa', fontWeight: 900, fontSize: '13px' }}>
-                ₹
-              </span>
-              <input
-                type="number"
-                min="1"
-                max="5000"
-                className="glass-input font-mono"
-                style={{
-                  width: '100%',
-                  fontSize: '15px',
-                  fontWeight: 900,
-                  padding: '7px 8px 7px 24px',
-                  height: '38px',
-                  borderRadius: '10px',
-                  border: '1.5px solid rgba(168, 85, 247, 0.4)',
-                  background: 'rgba(15, 23, 42, 0.9)'
-                }}
-                value={betAmount}
-                onChange={(e) => setBetAmount(e.target.value)}
-                disabled={!isBettingOpen}
-                placeholder="10"
-              />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {/* Countdown */}
+          {isBettingOpen && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Clock size={13} color={countdownColor} />
+              <span style={{ fontWeight: 900, fontSize: '20px', color: countdownColor, fontVariantNumeric: 'tabular-nums', minWidth: '28px', textAlign: 'right' }}>{countdown}</span>
+              <span style={{ fontSize: '10px', color: '#64748b' }}>s</span>
             </div>
-
-            <div className="colour-chip-pills">
-              {chips.map((c) => {
-                const theme = chipThemes[c] || chipThemes['10'];
-                const isSelected = betAmount === c;
-                return (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => { sound.playClick(); setBetAmount(c); }}
-                    disabled={!isBettingOpen}
-                    className={`colour-chip-btn ${isSelected ? 'active' : ''}`}
-                    style={{
-                      background: theme.bg,
-                      borderColor: theme.border,
-                      color: theme.color,
-                      boxShadow: isSelected ? `0 0 16px ${theme.glow}, 0 4px 10px rgba(0,0,0,0.5)` : `0 2px 6px rgba(0,0,0,0.3)`
-                    }}
-                  >
-                    ₹{c}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Prominent Eye-Catchy Bet Button */}
-          <button
-            type="button"
-            onClick={handlePlaceBet}
-            disabled={!isBettingOpen || submitting}
-            className="colour-confirm-btn"
-          >
-            <Sparkles size={17} />
-            {submitting ? 'Placing Bet...' : isBettingOpen ? `CONFIRM BET ₹${Number(betAmount || 0).toFixed(2)}` : 'BETTING CLOSED'}
-          </button>
-        </div>
-      </div>
-
-      {/* 3. Live Bets & My Wagers (Placed at the bottom) */}
-      <div className="glass-panel" style={{ padding: '12px 14px', borderRadius: '18px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '10px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '8px' }}>
-          <button
-            type="button"
-            onClick={() => { sound.playClick(); setActiveBetTab('live'); }}
-            style={{
-              background: activeBetTab === 'live' ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(217, 119, 6, 0.15) 100%)' : 'transparent',
-              border: activeBetTab === 'live' ? '1.5px solid rgba(245, 158, 11, 0.5)' : '1.5px solid transparent',
-              color: activeBetTab === 'live' ? '#fbbf24' : '#94a3b8',
-              padding: '5px 12px',
-              borderRadius: '8px',
-              fontSize: '12px',
-              fontWeight: 800,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              boxShadow: activeBetTab === 'live' ? '0 0 12px rgba(245, 158, 11, 0.3)' : 'none'
-            }}
-          >
-            <Flame size={13} color="#f59e0b" /> Live Round Bets ({liveBets.length})
-          </button>
-
-          <button
-            type="button"
-            onClick={() => { sound.playClick(); setActiveBetTab('my'); }}
-            style={{
-              background: activeBetTab === 'my' ? 'linear-gradient(135deg, rgba(0, 245, 155, 0.25) 0%, rgba(5, 150, 105, 0.15) 100%)' : 'transparent',
-              border: activeBetTab === 'my' ? '1.5px solid rgba(0, 245, 155, 0.5)' : '1.5px solid transparent',
-              color: activeBetTab === 'my' ? '#00f59b' : '#94a3b8',
-              padding: '5px 12px',
-              borderRadius: '8px',
-              fontSize: '12px',
-              fontWeight: 800,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              boxShadow: activeBetTab === 'my' ? '0 0 12px rgba(0, 245, 155, 0.3)' : 'none'
-            }}
-          >
-            <Coins size={13} color="#00f59b" /> My Wagers ({myBets.length})
-          </button>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', maxHeight: '130px', overflowY: 'auto' }}>
-          {activeBetTab === 'live' ? (
-            liveBets.length > 0 ? (
-              liveBets.map((b, idx) => (
-                <div key={idx} style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '6px 10px',
-                  background: 'rgba(15, 23, 42, 0.7)',
-                  border: '1px solid rgba(255, 255, 255, 0.05)',
-                  borderRadius: '8px',
-                  fontSize: '11.5px'
-                }}>
-                  <span style={{ fontWeight: 700, color: '#f8fafc' }}>{b.username}</span>
-                  <span style={{ textTransform: 'uppercase', color: '#c084fc', fontWeight: 800 }}>
-                    {b.selection}
-                  </span>
-                  <span className="font-mono" style={{ fontWeight: 800, color: '#00f59b' }}>
-                    ₹{Number(b.amount).toFixed(2)}
-                  </span>
-                </div>
-              ))
-            ) : (
-              <div style={{ color: '#64748b', fontSize: '11.5px', textAlign: 'center', padding: '12px' }}>
-                Waiting for incoming live bets...
-              </div>
-            )
-          ) : (
-            myBets.length > 0 ? (
-              myBets.map((b, idx) => (
-                <div key={idx} style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '6px 10px',
-                  background: 'rgba(15, 23, 42, 0.7)',
-                  border: '1px solid rgba(255, 255, 255, 0.05)',
-                  borderRadius: '8px',
-                  fontSize: '11.5px'
-                }}>
-                  <span style={{ color: '#94a3b8', fontWeight: 700 }}>#{b.roundNumber}</span>
-                  <span style={{ textTransform: 'uppercase', fontWeight: 800, color: '#c084fc' }}>{b.selection}</span>
-                  <span className="font-mono" style={{ fontWeight: 800, color: '#00f59b' }}>₹{Number(b.amount).toFixed(2)}</span>
-                </div>
-              ))
-            ) : (
-              <div style={{ color: '#64748b', fontSize: '11.5px', textAlign: 'center', padding: '12px' }}>
-                No wagers placed in this session yet.
-              </div>
-            )
           )}
+          {/* Provably Fair */}
+          <button type="button" onClick={() => setShowVerify(!showVerify)}
+            style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(168,85,247,0.4)', color: '#c084fc', padding: '5px 10px', borderRadius: '8px', fontSize: '10px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <ShieldCheck size={12} /> FAIR
+          </button>
         </div>
       </div>
 
-      <ProvablyFairModal
-        isOpen={isFairModalOpen}
-        onClose={() => setIsFairModalOpen(false)}
-        roundData={{ serverSeedHash, serverSeed }}
-      />
+      {/* ── Timer bar ── */}
+      {isBettingOpen && (
+        <div style={{ height: '3px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px', overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: `${timerPercent}%`, background: `linear-gradient(90deg, ${countdownColor}, ${countdownColor}88)`, transition: 'width 0.5s linear' }} />
+        </div>
+      )}
+
+      {/* ── Provably fair info ── */}
+      {showVerify && (
+        <div style={{ background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.25)', borderRadius: '12px', padding: '12px 14px', fontSize: '11px' }}>
+          <div style={{ color: '#a78bfa', fontWeight: 800, marginBottom: '6px' }}>🔐 Provably Fair — HMAC-SHA256-v1</div>
+          <div style={{ color: '#94a3b8', wordBreak: 'break-all', lineHeight: 1.7 }}>
+            <div><span style={{ color: '#64748b' }}>Committed Hash:</span> {serverSeedHash || '—'}</div>
+            {revealedSeed && <div style={{ color: '#34d399' }}><span style={{ color: '#64748b' }}>Revealed Seed:</span> {revealedSeed}</div>}
+          </div>
+          <div style={{ color: '#475569', marginTop: '6px', fontSize: '10px' }}>Verify: sha256(serverSeed) === hash above → HMAC(seed, "colour_public_seed_v1:{nonce}")</div>
+        </div>
+      )}
+
+      {/* ── Last result ── */}
+      {lastResult && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', borderRadius: '14px', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 700 }}>LAST RESULT</div>
+          <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: getResultGradient(lastResult.colors), display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '18px', color: '#fff', boxShadow: '0 0 20px rgba(0,0,0,0.4)' }}>
+            {lastResult.number}
+          </div>
+          <div>
+            <div style={{ fontWeight: 800, color: '#fff', fontSize: '14px' }}>{lastResult.colors?.join(' + ')}</div>
+            <div style={{ fontSize: '10px', color: '#64748b' }}>Round #{roundNumber}</div>
+          </div>
+        </div>
+      )}
+
+      {/* ── History row ── */}
+      {history.length > 0 && (
+        <div style={{ display: 'flex', gap: '5px', overflowX: 'auto', padding: '2px 0' }}>
+          {history.slice(0, 20).map((r, i) => (
+            <div key={r.roundId || i} style={{ width: '32px', height: '32px', borderRadius: '50%', background: getResultGradient(r.result?.colors || []), display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '13px', color: '#fff', flexShrink: 0, border: '1.5px solid rgba(255,255,255,0.15)' }}>
+              {r.result?.number ?? '?'}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── Color buttons ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+        {['RED','GREEN','VIOLET'].map(color => (
+          <button key={color} type="button" onClick={() => setSelectedBet(color)}
+            style={{
+              padding: '14px 8px',
+              borderRadius: '14px',
+              border: selectedBet === color ? '2px solid #fff' : '1.5px solid rgba(255,255,255,0.15)',
+              background: selectedBet === color ? COLOR_GRADIENT[color] : 'rgba(255,255,255,0.05)',
+              color: selectedBet === color ? '#fff' : '#94a3b8',
+              fontWeight: 900,
+              fontSize: '13px',
+              cursor: 'pointer',
+              transform: selectedBet === color ? 'scale(1.04)' : 'none',
+              boxShadow: selectedBet === color ? '0 0 20px rgba(255,255,255,0.2)' : 'none',
+              transition: 'all 0.15s',
+            }}>
+            {color}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Number buttons ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '6px' }}>
+        {['0','1','2','3','4','5','6','7','8','9'].map(n => (
+          <button key={n} type="button" onClick={() => setSelectedBet(n)}
+            style={{ ...getNumStyle(n, selectedBet === n), padding: '12px 0', borderRadius: '10px', fontWeight: 900, fontSize: '16px', cursor: 'pointer' }}>
+            {n}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Chips + Bet amount ── */}
+      <div style={{ display: 'flex', gap: '5px', overflowX: 'auto', paddingBottom: '2px' }}>
+        {CHIPS.map(chip => {
+          const t = CHIP_THEMES[chip];
+          const isActive = betAmount === chip;
+          return (
+            <button key={chip} type="button" onClick={() => setBetAmount(chip)}
+              style={{ background: t.bg, border: isActive ? `2px solid ${t.border}` : `1px solid ${t.border}44`, color: t.color, borderRadius: '50%', width: '44px', height: '44px', fontWeight: 900, fontSize: '11px', cursor: 'pointer', flexShrink: 0, boxShadow: isActive ? `0 0 12px ${t.border}` : 'none', transform: isActive ? 'scale(1.1)' : 'none', transition: 'all 0.15s' }}>
+              ₹{chip}
+            </button>
+          );
+        })}
+      </div>
+
+      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <input type="number" value={betAmount} onChange={e => setBetAmount(e.target.value)} min="1"
+          style={{ flex: 1, padding: '12px 14px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '12px', color: '#fff', fontSize: '16px', fontWeight: 700, outline: 'none' }} />
+        <button type="button" onClick={() => setBetAmount(String(Math.floor(Number(betAmount) / 2)))} style={{ padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }}>½</button>
+        <button type="button" onClick={() => setBetAmount(String(Number(betAmount) * 2))} style={{ padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }}>2×</button>
+      </div>
+
+      {/* ── Place Bet button ── */}
+      {alertMsg && (
+        <div style={{ padding: '10px 14px', borderRadius: '10px', fontSize: '12px', fontWeight: 600, textAlign: 'center',
+          background: alertError ? 'rgba(239,68,68,0.15)' : 'rgba(52,211,153,0.15)',
+          border: `1px solid ${alertError ? 'rgba(239,68,68,0.4)' : 'rgba(52,211,153,0.4)'}`,
+          color: alertError ? '#f87171' : '#34d399' }}>
+          {alertMsg}
+        </div>
+      )}
+
+      <button type="button" onClick={handlePlaceBet} disabled={submitting || !isBettingOpen}
+        style={{
+          padding: '15px',
+          borderRadius: '14px',
+          border: 'none',
+          background: !isBettingOpen ? 'rgba(100,116,139,0.3)'
+            : selectedBet ? 'linear-gradient(135deg,#6366f1,#a855f7)' : 'rgba(99,102,241,0.2)',
+          color: !isBettingOpen || !selectedBet ? '#475569' : '#fff',
+          fontWeight: 900,
+          fontSize: '15px',
+          cursor: submitting || !isBettingOpen ? 'not-allowed' : 'pointer',
+          boxShadow: isBettingOpen && selectedBet ? '0 4px 20px rgba(99,102,241,0.4)' : 'none',
+          transition: 'all 0.2s',
+          letterSpacing: '-0.3px',
+        }}>
+        {submitting ? 'Placing…' : !isBettingOpen ? '🔒 Betting Closed' : selectedBet ? `Bet ₹${betAmount} on ${selectedBet}` : 'Select a colour or number'}
+      </button>
+
+      {/* ── Tabs: Live Bets / My Bets ── */}
+      <div style={{ display: 'flex', gap: '6px', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0' }}>
+        {[['live','Live Bets'],['mine','My Bets']].map(([key, label]) => (
+          <button key={key} type="button" onClick={() => { setActiveTab(key); if(key==='mine') loadMyBets(); }}
+            style={{ padding: '8px 14px', background: 'none', border: 'none', borderBottom: activeTab===key ? '2px solid #6366f1' : '2px solid transparent', color: activeTab===key ? '#818cf8' : '#64748b', fontWeight: 700, fontSize: '12px', cursor: 'pointer', marginBottom: '-1px' }}>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab content */}
+      <div style={{ maxHeight: '240px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        {activeTab === 'live' ? (
+          liveBets.length === 0
+            ? <div style={{ color: '#475569', fontSize: '12px', textAlign: 'center', padding: '20px' }}>No bets yet this round</div>
+            : liveBets.map((b, i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px' }}>
+                <span style={{ fontSize: '12px', color: '#94a3b8' }}>{b.username || 'Player'}</span>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: '#818cf8', padding: '2px 8px', background: 'rgba(99,102,241,0.15)', borderRadius: '20px' }}>{b.prediction || b.selection}</span>
+                <span style={{ fontSize: '12px', fontWeight: 700, color: '#fbbf24' }}>₹{Number(b.amount).toFixed(0)}</span>
+              </div>
+            ))
+        ) : (
+          myBets.length === 0
+            ? <div style={{ color: '#475569', fontSize: '12px', textAlign: 'center', padding: '20px' }}>No bets yet</div>
+            : myBets.map((b, i) => (
+              <div key={b._id || i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px' }}>
+                <span style={{ fontSize: '11px', color: '#64748b' }}>#{b.roundNumber}</span>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: '#c084fc', padding: '2px 8px', background: 'rgba(168,85,247,0.1)', borderRadius: '20px' }}>{b.prediction}</span>
+                <span style={{ fontSize: '12px', color: '#94a3b8' }}>₹{Number(b.amount).toFixed(0)}</span>
+                <span style={{ fontSize: '11px', fontWeight: 700,
+                  color: b.status === 'WON' ? '#34d399' : b.status === 'LOST' ? '#f87171' : b.status === 'REFUNDED' ? '#fbbf24' : '#64748b' }}>
+                  {b.status === 'WON' ? `+₹${Number(b.payout||0).toFixed(0)}` : b.status === 'LOST' ? 'LOST' : b.status === 'REFUNDED' ? 'REFUND' : 'PENDING'}
+                </span>
+              </div>
+            ))
+        )}
+      </div>
     </div>
   );
 };
+
+export default ColourGame;

@@ -19,12 +19,11 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle 401 unauthorized
+// Handle 401 unauthorized — only clear token on authentication failure, not permission failure
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // If token expired, clear
       if (localStorage.getItem('nexus_token')) {
         localStorage.removeItem('nexus_token');
         window.dispatchEvent(new Event('auth:unauthorized'));

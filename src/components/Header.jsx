@@ -40,6 +40,7 @@ export const Header = ({
   const {
     user,
     wallet,
+    loading,
     logout,
     setIsAuthModalOpen,
     setIsDepositModalOpen,
@@ -503,7 +504,10 @@ export const Header = ({
           </button>
 
           {/* User Profile / Auth Button (Desktop Only: Mobile uses bottom navigation bar) */}
-          {user ? (
+          {loading ? (
+            /* Skeleton placeholder while session is being restored — prevents login button flash */
+            <div className="mobile-hide" style={{ width: '90px', height: '34px', background: 'rgba(255,255,255,0.06)', borderRadius: '10px', animation: 'pulse 1.5s ease-in-out infinite' }} />
+          ) : user ? (
             <div className="mobile-hide" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <div
                 onClick={() => {

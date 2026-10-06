@@ -11,7 +11,7 @@ export const BottomNav = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, setIsAuthModalOpen, setIsDepositModalOpen, openWalletModal } = useAuth();
+  const { user, loading, setIsAuthModalOpen, setIsDepositModalOpen, openWalletModal } = useAuth();
 
   const currentPath = location.pathname;
 
@@ -118,7 +118,7 @@ export const BottomNav = ({
           aria-label="Profile"
         >
           <User size={22} className="bottom-nav-icon" />
-          <span className="bottom-nav-label">{user ? user.username.slice(0, 6) : 'Profile'}</span>
+          <span className="bottom-nav-label">{loading ? '...' : user ? user.username.slice(0, 6) : 'Profile'}</span>
         </button>
       </div>
     </nav>
