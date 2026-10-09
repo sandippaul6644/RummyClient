@@ -108,12 +108,22 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('nexus_token');
-    localStorage.removeItem('nexus_refresh_token');
-    setToken(null);
-    setUser(null);
-    setWallet(null);
+  const logout = async () => {
+    try {
+      // Invalidate the refresh token on the server so it cannot be replayed
+      const refreshToken = localStorage.getItem('nexus_refresh_token');
+      if (refreshToken) {
+        await api.post('/auth/logout', { refreshToken }).catch(() => {});
+      }
+      // Leave the user's private notification room
+      if (user) socket.emit('user:leave', { userId: user._id || user.id });
+    } finally {
+      localStorage.removeItem('nexus_token');
+      localStorage.removeItem('nexus_refresh_token');
+      setToken(null);
+      setUser(null);
+      setWallet(null);
+    }
   };
 
   return (

@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext.jsx';
 import { NotificationProvider } from './context/NotificationContext.jsx';
 import { Header } from './components/Header.jsx';
 import { Footer } from './components/Footer.jsx';
 import { BottomNav } from './components/BottomNav.jsx';
+
+// Game routes — Footer + BottomNav are hidden on these pages
+const GAME_ROUTES = ['/colorprediction', '/colour', '/aviator', '/crash', '/dice', '/mines'];
 
 // Dedicated Page Files
 import { Lobby } from './pages/Lobby.jsx';
@@ -30,7 +33,9 @@ import { VIPModal } from './components/VIPModal.jsx';
 import { ComingSoonModal } from './components/ComingSoonModal.jsx';
 
 export const AppContent = () => {
-  const navigate = useNavigate();
+  const navigate  = useNavigate();
+  const { pathname } = useLocation();
+  const isGamePage = GAME_ROUTES.includes(pathname);
 
   // Modals state
   const [isDailyRewardsOpen, setIsDailyRewardsOpen] = useState(false);
@@ -110,14 +115,17 @@ export const AppContent = () => {
         </Routes>
       </main>
 
-      <Footer />
+      {/* Footer — hidden on game pages */}
+      {!isGamePage && <Footer />}
 
-      {/* Floating Bottom Navigation Bar */}
-      <BottomNav
-        onOpenPromotions={() => setIsDailyRewardsOpen(true)}
-        onOpenWallet={() => navigate('/wallet')}
-        onOpenProfile={() => navigate('/profile')}
-      />
+      {/* Bottom Nav — hidden on game pages (they have their own back button) */}
+      {!isGamePage && (
+        <BottomNav
+          onOpenPromotions={() => setIsDailyRewardsOpen(true)}
+          onOpenWallet={() => navigate('/wallet')}
+          onOpenProfile={() => navigate('/profile')}
+        />
+      )}
 
       {/* Global Modals */}
       <AuthModal />

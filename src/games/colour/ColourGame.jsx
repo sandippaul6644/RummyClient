@@ -68,7 +68,7 @@ export const ColourGame = () => {
   const [submitting,    setSubmitting]     = useState(false);
   const [alertMsg,      setAlertMsg]       = useState('');
   const [alertError,    setAlertError]     = useState(false);
-  const [activeTab,     setActiveTab]      = useState('live');
+  const [activeTab,     setActiveTab]      = useState('history');
   const [showVerify,    setShowVerify]     = useState(false);
   const [loadingHistory,setLoadingHistory] = useState(false);
 
@@ -341,14 +341,18 @@ export const ColourGame = () => {
         </div>
       )}
 
-      {/* ── History row ── */}
+      {/* ── History strip (clickable → opens History tab) ── */}
       {history.length > 0 && (
-        <div style={{ display: 'flex', gap: '5px', overflowX: 'auto', padding: '2px 0' }}>
+        <div style={{ display: 'flex', gap: '5px', overflowX: 'auto', padding: '2px 0', cursor: 'pointer' }}
+          onClick={() => setActiveTab('history')} title="See full history">
           {history.slice(0, 20).map((r, i) => (
             <div key={r.roundId || i} style={{ width: '32px', height: '32px', borderRadius: '50%', background: getResultGradient(r.result?.colors || []), display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '13px', color: '#fff', flexShrink: 0, border: '1.5px solid rgba(255,255,255,0.15)' }}>
               {r.result?.number ?? '?'}
             </div>
           ))}
+          <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid rgba(255,255,255,0.1)', fontSize: '10px', color: '#475569' }}>
+            ›
+          </div>
         </div>
       )}
 
@@ -433,42 +437,130 @@ export const ColourGame = () => {
         {submitting ? 'Placing…' : !isBettingOpen ? '🔒 Betting Closed' : selectedBet ? `Bet ₹${betAmount} on ${selectedBet}` : 'Select a colour or number'}
       </button>
 
-      {/* ── Tabs: Live Bets / My Bets ── */}
-      <div style={{ display: 'flex', gap: '6px', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0' }}>
-        {[['live','Live Bets'],['mine','My Bets']].map(([key, label]) => (
-          <button key={key} type="button" onClick={() => { setActiveTab(key); if(key==='mine') loadMyBets(); }}
-            style={{ padding: '8px 14px', background: 'none', border: 'none', borderBottom: activeTab===key ? '2px solid #6366f1' : '2px solid transparent', color: activeTab===key ? '#818cf8' : '#64748b', fontWeight: 700, fontSize: '12px', cursor: 'pointer', marginBottom: '-1px' }}>
+      {/* ── Tabs: History / Live Bets / My Bets ── */}
+      <div style={{ display: 'flex', gap: '4px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+        {[['history','📊 History'],['live','🔴 Live Bets'],['mine','👤 My Bets']].map(([key, label]) => (
+          <button key={key} type="button"
+            onClick={() => {
+              setActiveTab(key);
+              if (key === 'mine') loadMyBets();
+            }}
+            style={{
+              padding: '9px 14px', background: 'none', border: 'none',
+              borderBottom: activeTab === key ? '2px solid #6366f1' : '2px solid transparent',
+              color: activeTab === key ? '#818cf8' : '#64748b',
+              fontWeight: 700, fontSize: '12px', cursor: 'pointer', marginBottom: '-1px',
+              whiteSpace: 'nowrap',
+            }}>
             {label}
           </button>
         ))}
       </div>
 
       {/* Tab content */}
-      <div style={{ maxHeight: '240px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-        {activeTab === 'live' ? (
-          liveBets.length === 0
-            ? <div style={{ color: '#475569', fontSize: '12px', textAlign: 'center', padding: '20px' }}>No bets yet this round</div>
-            : liveBets.map((b, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px' }}>
-                <span style={{ fontSize: '12px', color: '#94a3b8' }}>{b.username || 'Player'}</span>
-                <span style={{ fontSize: '11px', fontWeight: 700, color: '#818cf8', padding: '2px 8px', background: 'rgba(99,102,241,0.15)', borderRadius: '20px' }}>{b.prediction || b.selection}</span>
-                <span style={{ fontSize: '12px', fontWeight: 700, color: '#fbbf24' }}>₹{Number(b.amount).toFixed(0)}</span>
-              </div>
-            ))
-        ) : (
-          myBets.length === 0
-            ? <div style={{ color: '#475569', fontSize: '12px', textAlign: 'center', padding: '20px' }}>No bets yet</div>
-            : myBets.map((b, i) => (
-              <div key={b._id || i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px' }}>
-                <span style={{ fontSize: '11px', color: '#64748b' }}>#{b.roundNumber}</span>
-                <span style={{ fontSize: '11px', fontWeight: 700, color: '#c084fc', padding: '2px 8px', background: 'rgba(168,85,247,0.1)', borderRadius: '20px' }}>{b.prediction}</span>
-                <span style={{ fontSize: '12px', color: '#94a3b8' }}>₹{Number(b.amount).toFixed(0)}</span>
-                <span style={{ fontSize: '11px', fontWeight: 700,
-                  color: b.status === 'WON' ? '#34d399' : b.status === 'LOST' ? '#f87171' : b.status === 'REFUNDED' ? '#fbbf24' : '#64748b' }}>
-                  {b.status === 'WON' ? `+₹${Number(b.payout||0).toFixed(0)}` : b.status === 'LOST' ? 'LOST' : b.status === 'REFUNDED' ? 'REFUND' : 'PENDING'}
-                </span>
-              </div>
-            ))
+      <div style={{ minHeight: '200px', maxHeight: '300px', overflowY: 'auto' }}>
+
+        {/* ── History ── */}
+        {activeTab === 'history' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '4px 0' }}>
+            {history.length === 0
+              ? <div style={{ color: '#475569', fontSize: '12px', textAlign: 'center', padding: '24px' }}>No history yet</div>
+              : history.map((r, i) => {
+                  const colors = r.result?.colors || [];
+                  const num    = r.result?.number ?? '?';
+                  const mainC  = colors[0] || 'RED';
+                  const clrMap = { RED: '#f87171', GREEN: '#34d399', VIOLET: '#c084fc' };
+                  const bg     = getResultGradient(colors);
+                  return (
+                    <div key={r.roundId || i} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', borderLeft: `3px solid ${clrMap[mainC] || '#6366f1'}` }}>
+                      {/* Number circle */}
+                      <div style={{ width: 36, height: 36, borderRadius: '50%', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '15px', color: '#fff', flexShrink: 0, boxShadow: '0 0 8px rgba(0,0,0,0.3)' }}>
+                        {num}
+                      </div>
+                      {/* Colour chips */}
+                      <div style={{ display: 'flex', gap: '4px', flex: 1, flexWrap: 'wrap' }}>
+                        {colors.map(c => (
+                          <span key={c} style={{ padding: '2px 8px', borderRadius: '12px', fontSize: '10px', fontWeight: 800, background: `${clrMap[c] || '#6366f1'}20`, color: clrMap[c] || '#818cf8', border: `1px solid ${clrMap[c] || '#6366f1'}44` }}>
+                            {c}
+                          </span>
+                        ))}
+                      </div>
+                      {/* Round number */}
+                      <span style={{ fontSize: '10px', color: '#334155', fontWeight: 600, flexShrink: 0 }}>
+                        #{r.roundNumber}
+                      </span>
+                    </div>
+                  );
+                })
+            }
+          </div>
+        )}
+
+        {/* ── Live Bets ── */}
+        {activeTab === 'live' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '4px 0' }}>
+            {liveBets.length === 0
+              ? <div style={{ color: '#475569', fontSize: '12px', textAlign: 'center', padding: '24px' }}>No bets placed this round yet</div>
+              : liveBets.map((b, i) => {
+                  const pred = b.prediction || b.selection || '?';
+                  const isNum = !isNaN(Number(pred));
+                  const clrMap = { RED:'#f87171', GREEN:'#34d399', VIOLET:'#c084fc' };
+                  const col = isNum ? '#fbbf24' : clrMap[pred] || '#818cf8';
+                  return (
+                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: '9px' }}>
+                      <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 600, flex: 1 }}>
+                        {b.username || 'Player'}
+                      </span>
+                      <span style={{ padding: '2px 9px', borderRadius: '20px', fontSize: '11px', fontWeight: 800, background: `${col}18`, color: col, border: `1px solid ${col}33`, margin: '0 8px', flexShrink: 0 }}>
+                        {isNum ? `#${pred}` : pred}
+                      </span>
+                      <span style={{ fontSize: '13px', fontWeight: 800, color: '#fbbf24', flexShrink: 0 }}>
+                        ₹{Number(b.amount).toFixed(0)}
+                      </span>
+                    </div>
+                  );
+                })
+            }
+          </div>
+        )}
+
+        {/* ── My Bets ── */}
+        {activeTab === 'mine' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '4px 0' }}>
+            {!user
+              ? <div style={{ color: '#475569', fontSize: '12px', textAlign: 'center', padding: '24px' }}>Login to see your bets</div>
+              : myBets.length === 0
+                ? <div style={{ color: '#475569', fontSize: '12px', textAlign: 'center', padding: '24px' }}>No bets yet — place your first bet!</div>
+                : myBets.map((b, i) => {
+                    const clrMap = { RED:'#f87171', GREEN:'#34d399', VIOLET:'#c084fc' };
+                    const pred   = b.prediction || '?';
+                    const isNum  = !isNaN(Number(pred));
+                    const col    = isNum ? '#fbbf24' : clrMap[pred] || '#818cf8';
+                    const isWon  = b.status === 'WON';
+                    const isLost = b.status === 'LOST';
+                    return (
+                      <div key={b._id || i} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 12px', borderRadius: '10px', background: isWon ? 'rgba(52,211,153,0.06)' : isLost ? 'rgba(239,68,68,0.04)' : 'rgba(255,255,255,0.03)', border: `1px solid ${isWon ? 'rgba(52,211,153,0.15)' : isLost ? 'rgba(239,68,68,0.1)' : 'transparent'}` }}>
+                        {/* Round */}
+                        <span style={{ fontSize: '10px', color: '#334155', fontWeight: 700, flexShrink: 0 }}>#{b.roundNumber}</span>
+                        {/* Prediction chip */}
+                        <span style={{ padding: '2px 8px', borderRadius: '20px', fontSize: '11px', fontWeight: 800, background: `${col}18`, color: col, border: `1px solid ${col}33`, flexShrink: 0 }}>
+                          {isNum ? `#${pred}` : pred}
+                        </span>
+                        {/* Stake */}
+                        <span style={{ fontSize: '12px', color: '#94a3b8', flex: 1 }}>₹{Number(b.amount).toFixed(0)}</span>
+                        {/* Result */}
+                        <span style={{ fontSize: '12px', fontWeight: 800, flexShrink: 0,
+                          color: isWon ? '#34d399' : isLost ? '#f87171' : b.status === 'REFUNDED' ? '#fbbf24' : '#64748b' }}>
+                          {isWon  ? `+₹${Number(b.payout || 0).toFixed(0)}`
+                          : isLost ? '—'
+                          : b.status === 'REFUNDED' ? 'REFUND'
+                          : 'PENDING'}
+                        </span>
+                      </div>
+                    );
+                  })
+            }
+          </div>
         )}
       </div>
     </div>
