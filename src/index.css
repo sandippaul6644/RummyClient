@@ -77,6 +77,110 @@ body {
   width: 100%;
 }
 
+/* Premium casino lobby */
+.lobby-shell {
+  isolation: isolate;
+}
+
+.lobby-hero-intro {
+  position: relative;
+  isolation: isolate;
+  min-height: 254px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  padding: 26px 22px;
+  border: 1px solid rgba(255, 211, 106, 0.38);
+  border-radius: 22px;
+  background:
+    linear-gradient(90deg, rgba(3, 10, 13, 0.98) 0%, rgba(4, 15, 18, 0.91) 42%, rgba(3, 11, 14, 0.2) 100%),
+    url('/images/casino-lobby-premium.png') center / cover no-repeat;
+  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.52), inset 0 1px 0 rgba(255, 243, 192, 0.25), 0 0 34px rgba(194, 137, 30, 0.12);
+}
+
+.lobby-hero-intro::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: linear-gradient(120deg, rgba(4, 76, 67, 0.18), transparent 48%, rgba(218, 160, 52, 0.08));
+  pointer-events: none;
+}
+
+.lobby-hero-copy {
+  max-width: 300px;
+}
+
+.lobby-hero-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #ffe6a4;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.lobby-hero-copy h1 {
+  margin: 8px 0 9px;
+  color: #fff8df;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(24px, 7vw, 34px);
+  line-height: 1.04;
+  letter-spacing: -0.055em;
+}
+
+.lobby-hero-copy p {
+  max-width: 260px;
+  color: rgba(236, 245, 238, 0.72);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.lobby-hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 16px;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 237, 174, 0.68);
+  border-radius: 999px;
+  background: linear-gradient(135deg, #fff0a8, #d99b29 66%, #a76210);
+  color: #1e1404;
+  box-shadow: 0 8px 22px rgba(207, 143, 25, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  transition: transform .2s ease, filter .2s ease;
+}
+
+.lobby-hero-cta:hover { transform: translateY(-2px); filter: brightness(1.08); }
+
+.lobby-hero-stats {
+  position: absolute;
+  right: 14px;
+  bottom: 15px;
+  display: grid;
+  gap: 6px;
+  color: rgba(255, 249, 226, 0.86);
+  font-size: 9px;
+  text-align: right;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.lobby-hero-stats span { padding: 5px 7px; border: 1px solid rgba(255, 218, 122, 0.22); border-radius: 7px; background: rgba(4, 16, 15, 0.48); backdrop-filter: blur(6px); }
+.lobby-hero-stats strong { color: #ffde75; }
+
+@media (max-width: 420px) {
+  .lobby-hero-intro { min-height: 245px; padding: 22px 18px; background-position: 61% center; }
+  .lobby-hero-copy { max-width: 235px; }
+  .lobby-hero-copy h1 { font-size: 26px; }
+}
+
 .font-mono {
   font-family: 'Space Grotesk', monospace;
 }
@@ -1809,4 +1913,109 @@ main {
 
 .aviator-cashout-btn:active {
   transform: translateY(1px) scale(0.98);
+}
+
+/* Full lobby premium pass */
+.lobby-shell {
+  gap: 16px !important;
+  padding-bottom: 24px !important;
+}
+
+.lobby-promos {
+  padding: 1px;
+  border-radius: 21px;
+  background: linear-gradient(135deg, rgba(255, 220, 131, 0.72), rgba(20, 141, 107, 0.48), rgba(255, 220, 131, 0.08));
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.42);
+}
+
+.lobby-promos .promo-slider-viewport { border-radius: 20px; }
+.lobby-promos .promo-bonus-banner { border: 0 !important; border-radius: 20px; }
+
+.lobby-value-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+}
+
+.lobby-value-row > div {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 7px;
+  border: 1px solid rgba(243, 204, 111, 0.16);
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(22, 37, 39, 0.92), rgba(10, 18, 21, 0.88));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 6px 12px rgba(0, 0, 0, 0.2);
+  color: #eecb75;
+}
+
+.lobby-value-row svg { flex: 0 0 auto; }
+.lobby-value-row span { display: grid; min-width: 0; color: #82918d; font-size: 8px; line-height: 1.2; }
+.lobby-value-row strong { overflow: hidden; color: #f5f0dd; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+
+.lobby-category-rail {
+  padding: 3px 2px 6px;
+  gap: 9px;
+  mask-image: linear-gradient(to right, transparent, #000 3%, #000 97%, transparent);
+}
+
+.lobby-category-rail .category-card-btn {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: linear-gradient(145deg, #101b20, #0a1014);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.055), 0 8px 14px rgba(0, 0, 0, 0.22);
+}
+
+.lobby-category-rail .category-card-btn.active {
+  border-color: rgba(253, 211, 102, 0.7);
+  background: radial-gradient(circle at 50% 0%, rgba(243, 176, 42, 0.28), transparent 67%), #241a0c;
+  box-shadow: 0 0 18px rgba(231, 168, 34, 0.24), inset 0 1px 0 rgba(255, 237, 172, 0.25);
+}
+
+.lobby-category-rail .category-card-btn.active .category-card-label { color: #ffe29a; }
+
+.lobby-featured-section, .lobby-games-section {
+  position: relative;
+  padding: 14px;
+  border: 1px solid rgba(241, 208, 126, 0.11);
+  border-radius: 19px;
+  background: linear-gradient(145deg, rgba(17, 31, 32, 0.72), rgba(7, 13, 17, 0.78));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045), 0 12px 28px rgba(0, 0, 0, 0.22);
+}
+
+.lobby-featured-section .section-header-row, .lobby-games-section .section-header-row { margin-bottom: 2px; }
+.lobby-featured-section .section-title-text, .lobby-games-section .section-title-text { color: #fff6d8 !important; letter-spacing: -0.025em; }
+
+.lobby-featured-card {
+  outline: 1px solid rgba(255, 225, 140, 0.07);
+  outline-offset: -1px;
+}
+
+.lobby-featured-card::after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  width: 70%;
+  height: 1px;
+  content: '';
+  background: linear-gradient(90deg, rgba(255, 235, 172, 0.6), transparent);
+}
+
+.lobby-games-section .popular-games-grid { gap: 11px; }
+.lobby-games-section .lucky-card-item { border-radius: 14px; background: #0a1416; }
+.lobby-games-section .lucky-card-item::after { position: absolute; inset: 0; z-index: 2; content: ''; border: 1px solid rgba(255, 230, 162, 0.1); border-radius: inherit; pointer-events: none; }
+.lobby-games-section .lucky-card-label-overlay { padding-bottom: 8px; background: linear-gradient(180deg, transparent, rgba(5, 13, 14, 0.92) 66%, #050c0e); }
+
+.lobby-winners-ticker {
+  border-color: rgba(240, 200, 97, 0.2) !important;
+  background: linear-gradient(100deg, rgba(39, 29, 11, 0.83), rgba(8, 22, 21, 0.9)) !important;
+}
+
+@media (max-width: 420px) {
+  .lobby-featured-section, .lobby-games-section { padding: 11px; border-radius: 16px; }
+  .lobby-value-row { gap: 5px; }
+  .lobby-value-row > div { gap: 5px; padding: 8px 5px; }
+  .lobby-value-row span { font-size: 7px; }
+  .lobby-value-row strong { font-size: 8px; }
 }

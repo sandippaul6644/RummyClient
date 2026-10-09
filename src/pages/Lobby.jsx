@@ -407,8 +407,8 @@ export const Lobby = ({
         titleMain: 'Get ₹500',
         titleHighlight: 'FREE',
         subtitle: 'Play Live Games & Win Real Cash!',
-        art: <GiftBoxPromoArt />,
-        bgGradient: 'linear-gradient(135deg, #4a044e 0%, #3b0764 45%, #1e1b4b 100%)',
+        art: null,
+        bgGradient: 'linear-gradient(90deg, rgba(37, 4, 31, 0.98) 0%, rgba(40, 5, 33, 0.89) 40%, rgba(36, 4, 29, 0.08) 100%), url("/images/promo-welcome-premium.png") center / cover no-repeat',
         border: '1.5px solid rgba(217, 70, 239, 0.45)',
         boxShadow: '0 12px 36px -8px rgba(0, 0, 0, 0.7), 0 0 30px rgba(192, 38, 211, 0.25)',
         btnBg: 'linear-gradient(135deg, rgba(217, 70, 239, 0.3) 0%, rgba(168, 85, 247, 0.3) 100%)',
@@ -425,8 +425,8 @@ export const Lobby = ({
         titleMain: 'Win 100x',
         titleHighlight: 'CASH',
         subtitle: 'Fly High in Realtime Crash & Cash Out!',
-        art: <RocketPromoArt />,
-        bgGradient: 'linear-gradient(135deg, #881337 0%, #4c0519 45%, #1e1b4b 100%)',
+        art: null,
+        bgGradient: 'linear-gradient(90deg, rgba(49, 4, 10, 0.98) 0%, rgba(49, 4, 10, 0.88) 40%, rgba(49, 4, 10, 0.08) 100%), url("/images/promo-aviator-premium.png") center / cover no-repeat',
         border: '1.5px solid rgba(244, 63, 94, 0.45)',
         boxShadow: '0 12px 36px -8px rgba(0, 0, 0, 0.7), 0 0 30px rgba(244, 63, 94, 0.25)',
         btnBg: 'linear-gradient(135deg, rgba(244, 63, 94, 0.3) 0%, rgba(225, 29, 72, 0.3) 100%)',
@@ -443,8 +443,8 @@ export const Lobby = ({
         titleMain: '100% MATCH',
         titleHighlight: 'BONUS',
         subtitle: 'Instant Deposit Match & VIP Level Perks!',
-        art: <VIPCrownPromoArt />,
-        bgGradient: 'linear-gradient(135deg, #064e3b 0%, #065f46 45%, #022c22 100%)',
+        art: null,
+        bgGradient: 'linear-gradient(90deg, rgba(2, 38, 28, 0.98) 0%, rgba(2, 38, 28, 0.9) 40%, rgba(2, 38, 28, 0.08) 100%), url("/images/promo-vip-premium.png") center / cover no-repeat',
         border: '1.5px solid rgba(52, 211, 153, 0.45)',
         boxShadow: '0 12px 36px -8px rgba(0, 0, 0, 0.7), 0 0 30px rgba(16, 185, 129, 0.25)',
         btnBg: 'linear-gradient(135deg, rgba(16, 185, 129, 0.3) 0%, rgba(5, 150, 105, 0.3) 100%)',
@@ -462,8 +462,8 @@ export const Lobby = ({
         titleMain: 'Earn ₹200',
         titleHighlight: 'PER FRIEND',
         subtitle: 'Instant Bonus for Every Active Invite!',
-        art: <ReferralPromoArt />,
-        bgGradient: 'linear-gradient(135deg, #1e3a8a 0%, #1e1b4b 45%, #0f172a 100%)',
+        art: null,
+        bgGradient: 'linear-gradient(90deg, rgba(4, 15, 42, 0.98) 0%, rgba(4, 15, 42, 0.9) 40%, rgba(4, 15, 42, 0.08) 100%), url("/images/promo-refer-premium.png") center / cover no-repeat',
         border: '1.5px solid rgba(96, 165, 250, 0.45)',
         boxShadow: '0 12px 36px -8px rgba(0, 0, 0, 0.7), 0 0 30px rgba(59, 130, 246, 0.25)',
         btnBg: 'linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(37, 99, 235, 0.3) 100%)',
@@ -551,7 +551,7 @@ export const Lobby = ({
       tagShadow: '0 0 10px rgba(16, 185, 129, 0.8)',
       payout: '2x - 9x Payout',
       badge: '100% Provably Fair',
-      image: '/images/game_color_prediction.jpg',
+      image: '/images/game_color_prediction_premium.png',
       borderColor: '#10b981',
       bgGlow: 'rgba(16, 185, 129, 0.25)',
       categories: ['all', 'popular', 'live', 'casino'],
@@ -569,7 +569,7 @@ export const Lobby = ({
       tagShadow: '0 0 10px rgba(244, 63, 94, 0.8)',
       payout: '1.01x - 100x+',
       badge: 'Auto Cashout',
-      image: '/images/game_aviator_neon.jpg',
+      image: '/images/game_aviator_premium.png',
       borderColor: '#f43f5e',
       bgGlow: 'rgba(244, 63, 94, 0.25)',
       categories: ['all', 'popular', 'live', 'casino'],
@@ -587,7 +587,7 @@ export const Lobby = ({
       tagShadow: '0 0 10px rgba(168, 85, 247, 0.8)',
       payout: 'Up to 990x',
       badge: '99% RTP',
-      image: '/images/game_mines.jpg',
+      image: '/images/game_dice_premium.png',
       borderColor: '#38bdf8',
       bgGlow: 'rgba(56, 189, 248, 0.25)',
       categories: ['all', 'popular', 'casino'],
@@ -698,6 +698,7 @@ export const Lobby = ({
 
   return (
     <div
+      className="lobby-shell"
       style={{
         maxWidth: '560px',
         margin: '0 auto',
@@ -709,9 +710,23 @@ export const Lobby = ({
         boxSizing: 'border-box',
       }}
     >
+      <section className="lobby-hero-intro" aria-label="Premium casino lobby">
+        <div className="lobby-hero-copy">
+          <span className="lobby-hero-kicker"><Sparkles size={13} /> Premium Casino</span>
+          <h1>Play where every round feels legendary.</h1>
+          <p>Discover live tables, instant wins, and exclusive rewards in one private lounge.</p>
+          <button type="button" className="lobby-hero-cta" onClick={() => document.getElementById('featured-games-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
+            <Play size={15} fill="currentColor" /> Explore games
+          </button>
+        </div>
+        <div className="lobby-hero-stats" aria-label="Casino highlights">
+          <span><strong>24/7</strong> live tables</span>
+          <span><strong>Fast</strong> payouts</span>
+        </div>
+      </section>
       {/* 1. HERO PROMO BANNER CAROUSEL SLIDER (LEFT TO RIGHT ONLY SLIDE EFFECT) */}
       <div
-        className="promo-slider-container"
+        className="promo-slider-container lobby-promos"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
@@ -778,8 +793,14 @@ export const Lobby = ({
         </div>
       </div>
 
+      <div className="lobby-value-row" aria-label="Lobby benefits">
+        <div><Shield size={15} /><span><strong>Secure play</strong>Protected wallet</span></div>
+        <div><Zap size={15} /><span><strong>Instant action</strong>Live rounds now</span></div>
+        <div><Crown size={15} /><span><strong>VIP rewards</strong>More every day</span></div>
+      </div>
+
       {/* 2. CATEGORY FILTER TABS */}
-      <div className="category-filter-row">
+      <div className="category-filter-row lobby-category-rail">
         {categories.map((cat) => {
           const isActive = selectedCategory === cat.id;
           return (
@@ -800,7 +821,7 @@ export const Lobby = ({
       </div>
 
       {/* 3. FEATURED LIVE REALTIME GAMES (THE 3 ACTIVE GAMES) */}
-      <div id="featured-games-section" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <div id="featured-games-section" className="lobby-featured-section" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
         <div className="section-header-row">
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span
@@ -838,6 +859,7 @@ export const Lobby = ({
           {filteredActiveGames.map((game) => (
             <div
               key={game.id}
+              className="lobby-featured-card"
               onClick={() => handleLaunchGame(game.route)}
               style={{
                 position: 'relative',
@@ -964,7 +986,7 @@ export const Lobby = ({
       </div>
 
       {/* 4. ALL GAMES & POPULAR GRID (3x2 Grid) */}
-      <div id="popular-games-section" style={{ marginTop: '6px' }}>
+      <div id="popular-games-section" className="lobby-games-section" style={{ marginTop: '6px' }}>
         <div className="section-header-row">
           <span className="section-title-text">All Casino & Card Games</span>
           <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>
@@ -1050,6 +1072,7 @@ export const Lobby = ({
 
       {/* 5. LIVE WINNERS TICKER BAR */}
       <div
+        className="lobby-winners-ticker"
         style={{
           marginTop: '6px',
           padding: '8px 12px',
