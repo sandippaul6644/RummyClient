@@ -62,27 +62,39 @@ export const Header = ({
 
   return (
     <>
-      {/* Top Header Navigation */}
-      <header
-        style={{
-          margin: '0 auto',
-          padding: '10px 12px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          position: 'sticky',
-          top: 0,
-          zIndex: 60,
-          gap: '8px',
-          maxWidth: '1280px',
-          width: '100%',
-          boxSizing: 'border-box',
-          background: 'rgba(7, 10, 20, 0.95)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-        }}
-      >
+      {/* ── Full-width sticky wrapper — background spans entire viewport ── */}
+      <div style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 60,
+        width: '100%',
+        background: 'linear-gradient(135deg, #1a0535 0%, #160d3a 35%, #0d1a3e 70%, #06121f 100%)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        boxShadow: '0 1px 0 rgba(168,85,247,0.35), 0 4px 24px rgba(99,102,241,0.18)',
+      }}>
+        {/* Rainbow bottom accent line */}
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0, height: '2px',
+          background: 'linear-gradient(90deg,#ef4444,#f97316,#fbbf24,#34d399,#22d3ee,#818cf8,#c084fc,#f472b6)',
+          opacity: 0.7,
+        }}/>
+
+        {/* Inner max-width container */}
+        <header
+          style={{
+            maxWidth: '1280px',
+            margin: '0 auto',
+            padding: '10px 16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '8px',
+            width: '100%',
+            boxSizing: 'border-box',
+            position: 'relative',  /* relative so rainbow stripe stays inside outer wrapper */
+          }}
+        >
         {/* Brand Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', minWidth: 0, flexShrink: 0 }}>
           <div
@@ -108,15 +120,16 @@ export const Header = ({
               }}
             />
 
-            <div>
+              <div>
               <div
                 style={{
                   fontWeight: 900,
                   fontSize: '20px',
                   letterSpacing: '-0.3px',
                   lineHeight: 1.1,
-                  color: '#ffffff',
-                  textShadow: '0 2px 10px rgba(255, 224, 102, 0.4)',
+                  background: 'linear-gradient(135deg, #ffffff 0%, #c4b5fd 60%, #f9a8d4 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
                 }}
               >
                 LuckyPlay
@@ -124,7 +137,9 @@ export const Header = ({
               <div
                 style={{
                   fontSize: '10px',
-                  color: '#c4b5fd',
+                  background: 'linear-gradient(90deg,#f87171,#fbbf24,#34d399)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
                   fontWeight: 700,
                   letterSpacing: '0.4px',
                   whiteSpace: 'nowrap',
@@ -380,19 +395,19 @@ export const Header = ({
               openNotificationModal();
             }}
             style={{
-              background: '#140f2e',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
+              background: 'linear-gradient(135deg,rgba(168,85,247,0.2),rgba(99,102,241,0.15))',
+              border: '1px solid rgba(168,85,247,0.4)',
               width: '38px',
               height: '38px',
               borderRadius: '50%',
-              color: '#e2e8f0',
+              color: '#c084fc',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               position: 'relative',
               flexShrink: 0,
-              boxShadow: '0 4px 14px rgba(0, 0, 0, 0.4)',
+              boxShadow: '0 0 12px rgba(168,85,247,0.25)',
               transition: 'transform 0.2s, background 0.2s',
             }}
             title="Notifications & Alerts"
@@ -433,14 +448,14 @@ export const Header = ({
             style={{
               display: 'flex',
               alignItems: 'center',
-              background: '#140f2e',
-              border: '1px solid rgba(255, 255, 255, 0.14)',
+              background: 'linear-gradient(135deg,rgba(30,15,60,0.95),rgba(15,25,50,0.95))',
+              border: '1px solid rgba(99,102,241,0.45)',
               borderRadius: '14px',
               padding: '4px 5px 4px 11px',
               gap: '8px',
               cursor: 'pointer',
               flexShrink: 0,
-              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255,255,255,0.08)',
+              boxShadow: '0 0 16px rgba(99,102,241,0.2), inset 0 1px 1px rgba(255,255,255,0.1)',
             }}
             title="LuckyPlay Wallet & Bankroll"
           >
@@ -450,7 +465,9 @@ export const Header = ({
               style={{
                 fontWeight: 800,
                 fontSize: '14px',
-                color: '#ffffff',
+                background: 'linear-gradient(90deg,#ffffff,#c4b5fd)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
                 letterSpacing: '-0.2px',
                 whiteSpace: 'nowrap',
               }}
@@ -574,6 +591,7 @@ export const Header = ({
           )}
         </div>
       </header>
+      </div>{/* end sticky outer wrapper */}
 
       {/* Realtime Search Bar Dropdown */}
       {isSearchOpen && (
@@ -582,7 +600,7 @@ export const Header = ({
             maxWidth: '1280px',
             margin: '0 auto',
             padding: '8px 18px',
-            background: 'rgba(11, 16, 30, 0.95)',
+            background: 'rgba(11, 16, 30, 0.97)',
             borderBottom: '1px solid rgba(99, 102, 241, 0.25)',
             position: 'sticky',
             top: '61px',
