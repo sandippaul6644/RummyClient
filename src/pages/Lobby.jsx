@@ -834,148 +834,127 @@ export const Lobby = ({
         </div>
 
         {/* 3 HERO ACTIVE GAME CARDS */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           {filteredActiveGames.map((game) => (
             <div
               key={game.id}
               onClick={() => handleLaunchGame(game.route)}
               style={{
                 position: 'relative',
-                borderRadius: '18px',
-                background: 'rgba(19, 15, 42, 0.85)',
-                border: `1.5px solid ${game.borderColor}`,
-                boxShadow: `0 10px 28px rgba(0,0,0,0.6), 0 0 20px ${game.bgGlow}`,
-                cursor: 'pointer',
+                borderRadius: '20px',
                 overflow: 'hidden',
+                cursor: 'pointer',
+                minHeight: '120px',
                 display: 'flex',
                 alignItems: 'stretch',
-                minHeight: '110px',
-                transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                border: `1px solid ${game.borderColor}55`,
+                boxShadow: `0 12px 32px rgba(0,0,0,0.65), 0 0 24px ${game.bgGlow}`,
+                transition: 'transform 0.22s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.22s ease',
+                background: '#050910',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-3px)';
-                e.currentTarget.style.boxShadow = `0 14px 34px rgba(0,0,0,0.7), 0 0 28px ${game.bgGlow}`;
+                e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
+                e.currentTarget.style.boxShadow = `0 20px 42px rgba(0,0,0,0.7), 0 0 36px ${game.bgGlow}`;
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = `0 10px 28px rgba(0,0,0,0.6), 0 0 20px ${game.bgGlow}`;
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = `0 12px 32px rgba(0,0,0,0.65), 0 0 24px ${game.bgGlow}`;
               }}
             >
-              {/* Game Thumbnail Image (Left) */}
-              <div
-                style={{
-                  width: '125px',
-                  minWidth: '125px',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  background: '#090616',
-                }}
-              >
+              {/* ── Full background image ── */}
+              <img
+                src={game.image}
+                alt={game.name}
+                style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', objectPosition:'center', opacity:0.35 }}
+              />
+
+              {/* ── Dark gradient overlay (left → transparent → right) ── */}
+              <div style={{
+                position:'absolute', inset:0,
+                background: `linear-gradient(105deg, rgba(5,9,16,0.97) 0%, rgba(5,9,16,0.88) 40%, rgba(5,9,16,0.45) 70%, rgba(5,9,16,0.15) 100%)`,
+              }}/>
+
+              {/* ── Accent colour glow from left edge ── */}
+              <div style={{
+                position:'absolute', left:0, top:0, bottom:0, width:'4px',
+                background: `linear-gradient(180deg, ${game.borderColor}00 0%, ${game.borderColor} 30%, ${game.borderColor} 70%, ${game.borderColor}00 100%)`,
+              }}/>
+
+              {/* ── Card thumbnail (right side) ── */}
+              <div style={{
+                position:'absolute', right:0, top:0, bottom:0, width:'140px',
+                overflow:'hidden',
+              }}>
                 <img
                   src={game.image}
-                  alt={game.name}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    display: 'block',
-                    transition: 'transform 0.3s ease',
-                  }}
+                  alt=""
+                  style={{ width:'100%', height:'100%', objectFit:'cover', objectPosition:'center' }}
                 />
-                <div
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    background: 'linear-gradient(to right, transparent 60%, rgba(19, 15, 42, 0.95) 100%)',
-                  }}
-                />
+                <div style={{ position:'absolute', inset:0, background:'linear-gradient(to right, rgba(5,9,16,0.99) 0%, rgba(5,9,16,0.5) 50%, transparent 100%)' }}/>
               </div>
 
-              {/* Game Details & CTA (Right) */}
-              <div
-                style={{
-                  flex: 1,
-                  padding: '12px 14px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  minWidth: 0,
-                  zIndex: 2,
-                }}
-              >
-                <div>
-                  {/* Status Tag */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                    <span
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        background: game.tagBg,
-                        color: '#ffffff',
-                        fontSize: '9px',
-                        fontWeight: 900,
-                        padding: '2px 8px',
-                        borderRadius: '6px',
-                        letterSpacing: '0.4px',
-                        boxShadow: game.tagShadow,
-                      }}
-                    >
-                      {game.tag}
-                    </span>
-                    <span style={{ fontSize: '11px', fontWeight: 800, color: '#facc15' }}>
-                      {game.payout}
-                    </span>
-                  </div>
+              {/* ── Content ── */}
+              <div style={{ position:'relative', zIndex:2, flex:1, padding:'14px 16px', display:'flex', flexDirection:'column', justifyContent:'space-between' }}>
 
-                  {/* Title & Subtitle */}
-                  <h3
-                    style={{
-                      margin: '0',
-                      fontSize: '16px',
-                      fontWeight: 900,
-                      color: '#ffffff',
-                      letterSpacing: '-0.2px',
-                    }}
-                  >
-                    {game.name}
-                  </h3>
-                  <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {game.description}
-                  </div>
+                {/* Top row: live tag + payout */}
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'6px' }}>
+                  <span style={{
+                    display:'inline-flex', alignItems:'center', gap:'4px',
+                    background: game.tagBg,
+                    color:'#fff', fontSize:'9px', fontWeight:900,
+                    padding:'3px 9px', borderRadius:'6px', letterSpacing:'0.5px',
+                    boxShadow: game.tagShadow,
+                    textTransform:'uppercase',
+                  }}>
+                    {game.tag}
+                  </span>
+                  <span style={{ fontSize:'12px', fontWeight:900, color:'#fbbf24', letterSpacing:'-0.3px', textShadow:'0 0 10px rgba(251,191,36,0.5)' }}>
+                    {game.payout}
+                  </span>
                 </div>
 
-                {/* Bottom Row: Provably Fair Badge + PLAY NOW button */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#cbd5e1', fontSize: '10px', fontWeight: 700 }}>
-                    <Shield size={12} color="#34d399" />
-                    <span>{game.badge}</span>
+                {/* Game name */}
+                <div>
+                  <h3 style={{ margin:0, fontSize:'18px', fontWeight:900, color:'#fff', letterSpacing:'-0.4px', lineHeight:1.1, textShadow:'0 2px 8px rgba(0,0,0,0.5)' }}>
+                    {game.name}
+                  </h3>
+                  <p style={{ margin:'4px 0 0', fontSize:'11px', color:'#94a3b8', lineHeight:1.4, maxWidth:'58%' }}>
+                    {game.description}
+                  </p>
+                </div>
+
+                {/* Bottom row: badge + PLAY NOW */}
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginTop:'10px' }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:'5px' }}>
+                    <Shield size={12} color="#34d399"/>
+                    <span style={{ fontSize:'10px', color:'#64748b', fontWeight:700 }}>{game.badge}</span>
                   </div>
 
                   <button
                     type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleLaunchGame(game.route);
-                    }}
+                    onClick={(e) => { e.stopPropagation(); handleLaunchGame(game.route); }}
                     style={{
-                      background: 'linear-gradient(135deg, #ffe066 0%, #ffb800 60%, #d97706 100%)',
-                      color: '#1c1106',
+                      background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%)',
+                      color: '#1a0a00',
                       border: 'none',
-                      borderRadius: '10px',
-                      padding: '6px 14px',
-                      fontSize: '11px',
+                      borderRadius: '11px',
+                      padding: '8px 18px',
+                      fontSize: '12px',
                       fontWeight: 900,
                       cursor: 'pointer',
                       display: 'inline-flex',
                       alignItems: 'center',
-                      gap: '4px',
-                      boxShadow: '0 0 14px rgba(255, 224, 102, 0.6)',
-                      transition: 'all 0.15s ease',
+                      gap: '5px',
+                      boxShadow: '0 0 18px rgba(251,191,36,0.55), inset 0 1px 0 rgba(255,255,255,0.25)',
+                      letterSpacing: '0.3px',
+                      textTransform: 'uppercase',
+                      transition: 'all 0.15s',
                       flexShrink: 0,
                     }}
+                    onMouseEnter={e => { e.currentTarget.style.transform='scale(1.05)'; e.currentTarget.style.boxShadow='0 0 24px rgba(251,191,36,0.75)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform='scale(1)'; e.currentTarget.style.boxShadow='0 0 18px rgba(251,191,36,0.55)'; }}
                   >
-                    <Play size={12} fill="#1c1106" /> PLAY NOW
+                    <Play size={12} fill="#1a0a00" /> Play Now
                   </button>
                 </div>
               </div>

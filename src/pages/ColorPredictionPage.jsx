@@ -14,9 +14,9 @@ export const ColorPredictionPage = () => {
         position: 'sticky',
         top: '61px',
         zIndex: 50,
-        background: 'linear-gradient(135deg, #1a0533 0%, #0e1a3a 50%, #0a1f2e 100%)',
-        borderBottom: '1px solid rgba(168,85,247,0.2)',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
+        background: 'linear-gradient(135deg, #1a0505 0%, #180810 50%, #0a1020 100%)',
+        borderBottom: '1px solid rgba(245,158,11,0.2)',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
         padding: '10px 14px',
         display: 'flex',
         alignItems: 'center',
@@ -77,8 +77,7 @@ export const ColorPredictionPage = () => {
         </div>
       </div>
 
-      {/* Colour stripe accent line */}
-      <div style={{ height: '3px', background: 'linear-gradient(90deg,#ef4444,#f97316,#fbbf24,#34d399,#22d3ee,#818cf8,#c084fc)', opacity: 0.7 }}/>
+      <div style={{ height: '3px', background: 'linear-gradient(90deg,#dc2626,#ef4444,#f59e0b,#fbbf24,#10b981,#059669)', opacity: 0.85 }}/>
 
       {/* Game content */}
       <div style={{ padding: '10px 10px 24px' }}>
