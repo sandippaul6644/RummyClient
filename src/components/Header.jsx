@@ -57,8 +57,8 @@ export const Header = ({
     sound.playClick();
   };
 
-  // Fallback balance: ₹ 1,250 (from design reference image) or real wallet balance
-  const balance = wallet ? Number(wallet.balance) : 1250;
+  // Only show wallet balance if user is logged in
+  const balance = user && wallet ? Number(wallet.balance) : null;
 
   return (
     <>
@@ -438,69 +438,71 @@ export const Header = ({
             )}
           </button>
 
-          {/* Wallet Balance Pill */}
-          <div
-            onClick={() => {
-              sound.playClick();
-              if (openWalletModal) openWalletModal('overview');
-              else setIsDepositModalOpen(true);
-            }}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              background: 'linear-gradient(135deg,rgba(30,10,10,0.95),rgba(15,10,5,0.95))',
-              border: '1px solid rgba(245,158,11,0.5)',
-              borderRadius: '14px',
-              padding: '4px 5px 4px 11px',
-              gap: '8px',
-              cursor: 'pointer',
-              flexShrink: 0,
-              boxShadow: '0 0 16px rgba(245,158,11,0.2), inset 0 1px 1px rgba(255,255,255,0.08)',
-            }}
-            title="LuckyPlay Wallet & Bankroll"
-          >
-            <Wallet size={16} color="#38bdf8" style={{ filter: 'drop-shadow(0 0 6px #38bdf8)' }} />
-            <span
-              className="font-mono"
-              style={{
-                fontWeight: 800,
-                fontSize: '14px',
-                background: 'linear-gradient(90deg,#fde68a,#fbbf24)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                letterSpacing: '-0.2px',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              ₹ {balance.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
-            </span>
-
-            {/* Vibrant Green "+" Deposit Button */}
+          {/* Wallet Balance Pill — Only show when logged in */}
+          {user && balance !== null && (
             <div
-              onClick={(e) => {
-                e.stopPropagation();
+              onClick={() => {
                 sound.playClick();
-                if (openWalletModal) openWalletModal('deposit');
+                if (openWalletModal) openWalletModal('overview');
                 else setIsDepositModalOpen(true);
               }}
               style={{
-                background: 'linear-gradient(135deg, #00e676 0%, #059669 100%)',
-                color: '#ffffff',
-                width: '26px',
-                height: '26px',
-                borderRadius: '9px',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 0 12px rgba(0, 230, 118, 0.65)',
+                background: 'linear-gradient(135deg,rgba(30,10,10,0.95),rgba(15,10,5,0.95))',
+                border: '1px solid rgba(245,158,11,0.5)',
+                borderRadius: '14px',
+                padding: '4px 5px 4px 11px',
+                gap: '8px',
+                cursor: 'pointer',
                 flexShrink: 0,
-                fontWeight: 900,
+                boxShadow: '0 0 16px rgba(245,158,11,0.2), inset 0 1px 1px rgba(255,255,255,0.08)',
               }}
-              title="Deposit Virtual Chips"
+              title="LuckyPlay Wallet & Bankroll"
             >
-              <Plus size={16} strokeWidth={3.5} />
+              <Wallet size={16} color="#38bdf8" style={{ filter: 'drop-shadow(0 0 6px #38bdf8)' }} />
+              <span
+                className="font-mono"
+                style={{
+                  fontWeight: 800,
+                  fontSize: '14px',
+                  background: 'linear-gradient(90deg,#fde68a,#fbbf24)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  letterSpacing: '-0.2px',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                ₹ {balance.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+              </span>
+
+              {/* Vibrant Green "+" Deposit Button */}
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  sound.playClick();
+                  if (openWalletModal) openWalletModal('deposit');
+                  else setIsDepositModalOpen(true);
+                }}
+                style={{
+                  background: 'linear-gradient(135deg, #00e676 0%, #059669 100%)',
+                  color: '#ffffff',
+                  width: '26px',
+                  height: '26px',
+                  borderRadius: '9px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 0 12px rgba(0, 230, 118, 0.65)',
+                  flexShrink: 0,
+                  fontWeight: 900,
+                }}
+                title="Deposit Virtual Chips"
+              >
+                <Plus size={16} strokeWidth={3.5} />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Desktop "Deposit" Button */}
           <button
