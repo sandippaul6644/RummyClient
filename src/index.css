@@ -181,6 +181,71 @@ body {
   .lobby-hero-copy h1 { font-size: 26px; }
 }
 
+/* Desktop lobby composition: use the available canvas instead of the mobile column. */
+@media (min-width: 900px) {
+  .lobby-shell {
+    display: grid !important;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr) !important;
+    align-items: start;
+    gap: 20px !important;
+    width: min(1240px, calc(100% - 48px)) !important;
+    max-width: 1240px !important;
+    padding: 26px 0 56px !important;
+  }
+
+  .lobby-shell > .lobby-hero-intro,
+  .lobby-shell > .lobby-promos,
+  .lobby-shell > .lobby-value-row,
+  .lobby-shell > .lobby-category-rail,
+  .lobby-shell > .lobby-winners-ticker {
+    grid-column: 1 / -1;
+  }
+
+  .lobby-hero-intro {
+    min-height: 348px;
+    padding: 42px;
+    border-radius: 28px;
+    background-position: center 54%;
+  }
+
+  .lobby-hero-copy { max-width: 500px; }
+  .lobby-hero-copy h1 { max-width: 490px; font-size: clamp(40px, 4vw, 58px); }
+  .lobby-hero-copy p { max-width: 390px; font-size: 14px; }
+  .lobby-hero-cta { margin-top: 21px; padding: 13px 19px; font-size: 13px; }
+  .lobby-hero-stats { right: 28px; bottom: 28px; font-size: 10px; }
+
+  .lobby-promos { border-radius: 23px; }
+  .lobby-promos .promo-bonus-banner { min-height: 196px; padding: 30px 34px; border-radius: 22px; }
+  .lobby-promos .promo-bonus-title { font-size: 34px; }
+  .lobby-promos .promo-bonus-subtitle { font-size: 14px; }
+  .lobby-promos .promo-bonus-badge { font-size: 11px; }
+
+  .lobby-value-row { gap: 14px; }
+  .lobby-value-row > div { padding: 13px 16px; gap: 10px; border-radius: 14px; }
+  .lobby-value-row span { font-size: 10px; }
+  .lobby-value-row strong { font-size: 12px; }
+
+  .lobby-category-rail { justify-content: center; mask-image: none; }
+  .lobby-category-rail .category-card-btn { min-width: 104px; min-height: 73px; }
+
+  .lobby-featured-section, .lobby-games-section { height: 100%; padding: 20px; border-radius: 22px; }
+  .lobby-featured-section { grid-column: 1; }
+  .lobby-games-section { grid-column: 2; }
+  .lobby-featured-section .section-title-text, .lobby-games-section .section-title-text { font-size: 20px !important; }
+  .lobby-featured-section > div:last-child { gap: 14px !important; }
+  .lobby-featured-card { min-height: 156px !important; }
+  .lobby-featured-card h3 { font-size: 21px !important; }
+  .lobby-featured-card p { font-size: 12px !important; }
+  .lobby-featured-card > div:nth-child(4) { width: 210px !important; }
+
+  .lobby-games-section .popular-games-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  .lobby-games-section .lucky-card-item { border-radius: 17px; }
+  .lobby-games-section .lucky-card-name-text { font-size: 12px; }
+
+  .bottom-nav-container { display: none !important; }
+  body { padding-bottom: 0 !important; }
+}
+
 .font-mono {
   font-family: 'Space Grotesk', monospace;
 }

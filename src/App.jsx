@@ -7,13 +7,16 @@ import { Footer } from './components/Footer.jsx';
 import { BottomNav } from './components/BottomNav.jsx';
 
 // Game routes — Footer + BottomNav are hidden on these pages
-const GAME_ROUTES = ['/colorprediction', '/colour', '/aviator', '/crash', '/dice', '/mines'];
+const GAME_ROUTES = ['/colorprediction', '/colour', '/aviator', '/crash', '/dice', '/mines', '/teenpatti', '/dragon', '/rummy'];
 
 // Dedicated Page Files
 import { Lobby } from './pages/Lobby.jsx';
 import { ColorPredictionPage } from './pages/ColorPredictionPage.jsx';
 import { AviatorPage } from './pages/AviatorPage.jsx';
 import { DicePage } from './pages/DicePage.jsx';
+import { TeenPattiPage }   from './pages/TeenPattiPage.jsx';
+import { DragonTigerPage } from './pages/DragonTigerPage.jsx';
+import { RummyPage }       from './pages/RummyPage.jsx';
 import { WalletPage } from './pages/WalletPage.jsx';
 import { PromotionsPage } from './pages/PromotionsPage.jsx';
 import { VIPPage } from './pages/VIPPage.jsx';
@@ -88,6 +91,15 @@ export const AppContent = () => {
           <Route path="/dice" element={<DicePage />} />
           <Route path="/mines" element={<Navigate to="/dice" replace />} />
 
+          {/* 4b. Teen Patti */}
+          <Route path="/teenpatti" element={<TeenPattiPage />} />
+
+          {/* 4c. Dragon vs Tiger */}
+          <Route path="/dragon" element={<DragonTigerPage />} />
+
+          {/* 4d. Indian Rummy */}
+          <Route path="/rummy" element={<RummyPage />} />
+
           {/* 5. Wallet & Transactions (localhost:5173/wallet and /transactions) */}
           <Route path="/wallet" element={<WalletPage />} />
           <Route path="/transactions" element={<Navigate to="/wallet" replace />} />
@@ -154,6 +166,9 @@ export const AppContent = () => {
           if (gameType === 'colour' || gameType === 'colorprediction') navigate('/colorprediction');
           else if (gameType === 'crash' || gameType === 'aviator') navigate('/aviator');
           else if (gameType === 'dice' || gameType === 'mines') navigate('/dice');
+          else if (gameType === 'teenpatti') navigate('/teenpatti');
+          else if (gameType === 'rummy') navigate('/rummy');
+          else if (gameType === 'dragontiger' || gameType === 'dragon') navigate('/dragon');
           else navigate('/');
         }}
       />
