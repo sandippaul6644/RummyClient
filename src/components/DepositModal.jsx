@@ -1,16 +1,23 @@
 /**
  * DepositModal — UPI QR Code or Crypto (TRX) deposit request
+ * FEAT-007: Enhanced with wallet integration and polling for approval status
  */
-import React, { useState, useEffect } from 'react';
-import { X, Copy, Check, ArrowDownLeft, Smartphone, Bitcoin, AlertTriangle, Upload } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Copy, Check, ArrowDownLeft, Smartphone, Bitcoin, AlertTriangle, Upload, Loader } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { api }     from '../services/api.js';
 
 const iStyle = { width:'100%', padding:'12px 14px', background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'12px', color:'#fff', fontSize:'14px', outline:'none', boxSizing:'border-box' };
 const lbl    = { display:'block', fontSize:'11px', fontWeight:700, color:'#64748b', textTransform:'uppercase', marginBottom:'6px', letterSpacing:'0.5px' };
 
+// Toast notification helper
+const showToast = (message, type = 'info') => {
+  const event = new CustomEvent('app:toast', { detail: { message, type } });
+  window.dispatchEvent(event);
+};
+
 export const DepositModal = () => {
-  const { isDepositModalOpen, setIsDepositModalOpen, refreshWallet } = useAuth();
+  const { isDepositModalOpen, setIsDepositModalOpen, refreshWallet, wallet } = useAuth();
   const [tab,        setTab]        = useState('upi');
   const [cfg,        setCfg]        = useState(null);
   const [activeQr,   setActiveQr]   = useState(null);
@@ -23,12 +30,45 @@ export const DepositModal = () => {
   const [done,       setDone]       = useState(false);
   const [error,      setError]      = useState('');
   const [copied,     setCopied]     = useState('');
+  const [pollingId, setPollingId]   = useState(null);
+  const pollIntervalRef = useRef(null);
 
   useEffect(() => {
     if (!isDepositModalOpen) return;
     api.get('/payment-config').then(r => { if (r.data?.success) setCfg(r.data.data); }).catch(() => {});
     api.get('/deposit/upi-qr').then(r => { if (r.data?.success) setActiveQr(r.data.data); }).catch(() => {});
   }, [isDepositModalOpen]);
+
+  // Poll for deposit approval status
+  const startPolling = (depositId) => {
+    if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+    
+    pollIntervalRef.current = setInterval(async () => {
+      try {
+        const res = await api.get(`/deposits/${depositId}`);
+        if (res.data?.success) {
+          const deposit = res.data.data;
+          if (deposit.status === 'approved') {
+            clearInterval(pollIntervalRef.current);
+            showToast('✅ Your deposit has been approved! Wallet updated.', 'success');
+            refreshWallet?.();
+          } else if (deposit.status === 'rejected') {
+            clearInterval(pollIntervalRef.current);
+            showToast('❌ Your deposit has been rejected.', 'error');
+          }
+        }
+      } catch (err) {
+        console.error('Polling error:', err);
+      }
+    }, 30000); // Poll every 30 seconds
+  };
+
+  const stopPolling = () => {
+    if (pollIntervalRef.current) {
+      clearInterval(pollIntervalRef.current);
+      pollIntervalRef.current = null;
+    }
+  };
 
   if (!isDepositModalOpen) return null;
 
@@ -51,7 +91,11 @@ export const DepositModal = () => {
       fd.append('utrReference', utrRef.trim());
       if (screenshot) fd.append('screenshot', screenshot);
       const res = await api.post('/deposit/upi', fd, { headers:{ 'Content-Type':'multipart/form-data' }});
-      if (res.data?.success) { setDone(true); }
+      if (res.data?.success) {
+        setDone(true);
+        setPollingId(res.data.data.depositId);
+        startPolling(res.data.data.depositId);
+      }
     } catch (err) { setError(err.response?.data?.message || 'Submission failed'); }
     finally { setLoading(false); }
   };
@@ -64,14 +108,19 @@ export const DepositModal = () => {
     setLoading(true); setError('');
     try {
       const res = await api.post('/deposit/crypto', { amount: num, cryptoAmount: Number(cryptoAmt)||0, cryptoTxnHash: txnHash.trim() });
-      if (res.data?.success) { setDone(true); }
+      if (res.data?.success) {
+        setDone(true);
+        setPollingId(res.data.data.depositId);
+        startPolling(res.data.data.depositId);
+      }
     } catch (err) { setError(err.response?.data?.message || 'Submission failed'); }
     finally { setLoading(false); }
   };
 
   const close = () => {
+    stopPolling();
     setIsDepositModalOpen(false);
-    setDone(false); setError(''); setAmount(''); setUtrRef(''); setTxnHash(''); setCryptoAmt(''); setScreenshot(null);
+    setDone(false); setError(''); setAmount(''); setUtrRef(''); setTxnHash(''); setCryptoAmt(''); setScreenshot(null); setPollingId(null);
   };
 
   const QUICK = ['100','250','500','1000','2000','5000'];
@@ -99,9 +148,15 @@ export const DepositModal = () => {
           <div style={{ padding:'40px 24px', textAlign:'center' }}>
             <div style={{ fontSize:'48px', marginBottom:'16px' }}>✅</div>
             <h3 style={{ color:'#34d399', fontWeight:900, fontSize:'18px', marginBottom:'8px' }}>Request Submitted!</h3>
-            <p style={{ color:'#94a3b8', fontSize:'13px', lineHeight:1.6, marginBottom:'20px' }}>
-              Your deposit request has been sent to our team. We typically process within <strong style={{ color:'#fbbf24' }}>15–30 minutes</strong>. Your wallet will be credited once approved.
+            <p style={{ color:'#94a3b8', fontSize:'13px', lineHeight:1.6, marginBottom:'12px' }}>
+              Your deposit request has been sent to our team. We typically process within <strong style={{ color:'#fbbf24' }}>15–30 minutes</strong>.
             </p>
+            <div style={{ padding:'12px 14px', background:'rgba(52,211,153,0.08)', border:'1px solid rgba(52,211,153,0.2)', borderRadius:'10px', marginBottom:'20px' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:'8px', fontSize:'12px', color:'#34d399' }}>
+                <Loader size={13} className="animate-spin"/> Monitoring approval status...
+              </div>
+            </div>
+            <p style={{ fontSize:'11px', color:'#64748b', marginBottom:'16px' }}>We'll notify you when your wallet is credited.</p>
             <button onClick={close} style={{ padding:'12px 24px', borderRadius:'12px', border:'none', background:'rgba(52,211,153,0.85)', color:'#fff', fontWeight:800, fontSize:'14px', cursor:'pointer' }}>Done</button>
           </div>
         ) : (

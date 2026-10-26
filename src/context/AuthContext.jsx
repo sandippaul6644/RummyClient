@@ -12,6 +12,7 @@ export const AuthProvider = ({ children }) => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
+  const [withdrawalHistory, setWithdrawalHistory] = useState([]);
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
   const [walletModalTab, setWalletModalTab] = useState('overview');
 
@@ -145,6 +146,8 @@ export const AuthProvider = ({ children }) => {
         setIsDepositModalOpen,
         isWithdrawModalOpen,
         setIsWithdrawModalOpen,
+        withdrawalHistory,
+        setWithdrawalHistory,
         isWalletModalOpen,
         setIsWalletModalOpen,
         walletModalTab,
