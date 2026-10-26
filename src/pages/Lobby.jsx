@@ -539,7 +539,7 @@ export const Lobby = ({
     { id: 'slots', label: 'Slots', renderIcon: (active) => <CatSlotsIcon active={active} /> },
   ];
 
-  // 1. MASTER 3 ACTIVE PLAYABLE GAMES
+  // 1. MASTER 4 ACTIVE PLAYABLE GAMES (2x2 GRID, 4K IMAGES & FIRE THEME)
   const activePlayableGames = [
     {
       id: 'colour',
@@ -547,14 +547,14 @@ export const Lobby = ({
       route: '/colorprediction',
       name: 'Colour Prediction',
       subtitle: 'WinGo 30s Realtime',
-      tag: '🔴🟢🟣 30s LIVE',
-      tagBg: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-      tagShadow: '0 0 10px rgba(16, 185, 129, 0.8)',
+      tag: '30s LIVE',
+      tagBg: 'linear-gradient(135deg, #ff1744 0%, #ff5200 100%)',
+      tagShadow: '0 0 10px rgba(255, 82, 0, 0.8)',
       payout: '2x - 9x Payout',
       badge: '100% Provably Fair',
       image: '/images/game_color_prediction_premium.png',
-      borderColor: '#10b981',
-      bgGlow: 'rgba(16, 185, 129, 0.25)',
+      borderColor: '#ff5722',
+      bgGlow: 'rgba(255, 87, 34, 0.3)',
       categories: ['all', 'popular', 'live', 'casino'],
       isLive: true,
       description: 'Predict colors & numbers in live 30-second rounds with instant wallet payouts.',
@@ -565,17 +565,35 @@ export const Lobby = ({
       route: '/aviator',
       name: 'Aviator Rocket',
       subtitle: 'Crash Multiplier',
-      tag: '🚀 LIVE FLIGHT',
-      tagBg: 'linear-gradient(135deg, #f43f5e 0%, #e11d48 100%)',
+      tag: '100x FLY',
+      tagBg: 'linear-gradient(135deg, #ff1744 0%, #e11d48 100%)',
       tagShadow: '0 0 10px rgba(244, 63, 94, 0.8)',
       payout: '1.01x - 100x+',
       badge: 'Auto Cashout',
       image: '/images/game_aviator_premium.png',
-      borderColor: '#f43f5e',
-      bgGlow: 'rgba(244, 63, 94, 0.25)',
+      borderColor: '#ff1744',
+      bgGlow: 'rgba(255, 23, 68, 0.3)',
       categories: ['all', 'popular', 'live', 'casino'],
       isLive: true,
       description: 'Watch the rocket soar upwards and cash out before the crash for huge multipliers.',
+    },
+    {
+      id: 'dragon-tiger',
+      slug: 'dragon',
+      route: '/dragon',
+      name: 'Dragon vs Tiger',
+      subtitle: 'Speed Card Battle',
+      tag: 'LIVE BATTLE',
+      tagBg: 'linear-gradient(135deg, #ff5200 0%, #ff7a00 100%)',
+      tagShadow: '0 0 10px rgba(255, 82, 0, 0.8)',
+      payout: '2x Win • 8x Tie',
+      badge: 'Live Multiplayer',
+      image: '/images/game_dragon_tiger_premium.png',
+      borderColor: '#ff6d00',
+      bgGlow: 'rgba(255, 109, 0, 0.3)',
+      categories: ['all', 'popular', 'live', 'card', 'casino'],
+      isLive: true,
+      description: 'Fast-paced live card clash between Dragon and Tiger with 15s quick rounds.',
     },
     {
       id: 'dice',
@@ -583,14 +601,14 @@ export const Lobby = ({
       route: '/dice',
       name: 'Classic Dice',
       subtitle: 'Over / Under Slider',
-      tag: '🎲 INSTANT ROLL',
-      tagBg: 'linear-gradient(135deg, #a855f7 0%, #7c3aed 100%)',
-      tagShadow: '0 0 10px rgba(168, 85, 247, 0.8)',
+      tag: '990x ROLL',
+      tagBg: 'linear-gradient(135deg, #ff9100 0%, #ffab00 100%)',
+      tagShadow: '0 0 10px rgba(255, 145, 0, 0.8)',
       payout: 'Up to 990x',
-      badge: '99% RTP',
+      badge: '99% High RTP',
       image: '/images/game_dice_premium.png',
-      borderColor: '#38bdf8',
-      bgGlow: 'rgba(56, 189, 248, 0.25)',
+      borderColor: '#ff9100',
+      bgGlow: 'rgba(255, 145, 0, 0.3)',
       categories: ['all', 'popular', 'casino'],
       isLive: true,
       description: 'Provably fair instant dice roll with customizable win chances & payouts up to 990x.',
@@ -612,23 +630,12 @@ export const Lobby = ({
       categories: ['all', 'popular', 'live', 'casino'],
     },
     {
-      id: 'dragon-tiger',
-      name: 'Dragon vs Tiger',
-      displayName: 'Dragon vs Tiger',
-      categoryTitle: 'Card Games',
-      rtp: '97.2%',
-      action: () => onSelectComingSoonGame && onSelectComingSoonGame({ title: 'Dragon vs Tiger', category: 'Card Games', rtp: '97.2%' }),
-      image: '/images/game_dragon_tiger.jpg',
-      borderColor: 'rgba(56, 189, 248, 0.45)',
-      categories: ['all', 'popular', 'card'],
-    },
-    {
       id: 'teen-patti',
       name: 'Teen Patti',
       displayName: 'Teen Patti 3 Card',
       categoryTitle: 'Card Games',
       rtp: '96.5%',
-      action: () => onSelectComingSoonGame && onSelectComingSoonGame({ title: 'Teen Patti', category: 'Card Games', rtp: '96.5%' }),
+      action: () => handleLaunchGame('/teenpatti'),
       image: '/images/game_teen_patti.jpg',
       borderColor: 'rgba(168, 85, 247, 0.55)',
       categories: ['all', 'popular', 'card'],
@@ -661,7 +668,7 @@ export const Lobby = ({
       displayName: 'Rummy',
       categoryTitle: 'Card Games',
       rtp: '98.1%',
-      action: () => onSelectComingSoonGame && onSelectComingSoonGame({ title: 'Indian Rummy', category: 'Card Games', rtp: '98.1%' }),
+      action: () => handleLaunchGame('/rummy'),
       image: '/images/game_rummy.jpg',
       borderColor: 'rgba(16, 185, 129, 0.45)',
       categories: ['all', 'card'],
@@ -793,7 +800,7 @@ export const Lobby = ({
 
       {/* 3. REALTIME LIVE WINNERS TICKER BAR */}
       <div className="lobby-winners-ticker">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden', minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden', minWidth: 0, flex: 1 }}>
           <span className="live-pulse-dot" />
           <span style={{ fontWeight: 900, color: '#fbbf24', fontSize: '10px', letterSpacing: '0.6px', textTransform: 'uppercase', flexShrink: 0 }}>
             Recent Win:
@@ -806,6 +813,7 @@ export const Lobby = ({
               opacity: isTickerFading ? 0 : 1,
               transition: 'opacity 0.3s ease',
               fontSize: '11px',
+              minWidth: 0,
             }}
           >
             <strong style={{ color: '#fff' }}>{INDIAN_WINNERS_POOL[currentWinnerIndex].name}</strong> won{' '}
@@ -814,164 +822,104 @@ export const Lobby = ({
             <span style={{ color: '#fbbf24', fontWeight: 800 }}>({INDIAN_WINNERS_POOL[currentWinnerIndex].mult})</span>
           </span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0, color: '#34d399', fontSize: '10px', fontWeight: 700 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0, color: '#34d399', fontSize: '10px', fontWeight: 700, marginLeft: '8px' }}>
           <Shield size={12} />
-          <span className="mobile-hide">Provably Fair</span>
+          <span className="mobile-hide" style={{ whiteSpace: 'nowrap' }}>Provably Fair</span>
         </div>
       </div>
 
-      {/* 5. FEATURED LIVE REALTIME GAMES (THE 3 ACTIVE GAMES) */}
+      {/* 5. FEATURED LIVE REALTIME GAMES (2 BLOCKS PER ROW, 4K ARTWORK & BRIGHT FIRE THEME) */}
       <div id="featured-games-section" className="lobby-featured-section">
         <div className="section-header-row">
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span className="live-pulse-dot" />
-            <span className="section-title-text">
+            <span
+              className="live-pulse-dot"
+              style={{
+                background: '#ff4500',
+                boxShadow: '0 0 10px #ff4500, 0 0 4px #ff9900',
+              }}
+            />
+            <span className="section-title-text" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               Live Multiplayer Games
             </span>
           </div>
           <span
             style={{
               fontSize: '11px',
-              fontWeight: 800,
-              color: '#34d399',
-              background: 'rgba(16, 185, 129, 0.15)',
+              fontWeight: 900,
+              color: '#fff',
+              background: 'linear-gradient(135deg, rgba(255, 69, 0, 0.4) 0%, rgba(255, 140, 0, 0.25) 100%)',
               padding: '3px 10px',
               borderRadius: '20px',
-              border: '1px solid rgba(16, 185, 129, 0.3)',
+              border: '1px solid rgba(255, 100, 0, 0.6)',
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '4px',
+              gap: '5px',
+              boxShadow: '0 0 14px rgba(255, 69, 0, 0.35)',
+              letterSpacing: '0.4px',
             }}
           >
-            <Activity size={12} /> 3 ACTIVE NOW
+            <Flame size={12} fill="#ff6a00" color="#ff4500" className="fire-flicker" /> 4 LIVE TABLES
           </span>
         </div>
 
-        {/* 3 HERO ACTIVE GAME CARDS IN RESPONSIVE GRID */}
-        <div className="featured-games-grid">
+        {/* 2-BLOCKS PER ROW RESPONSIVE GRID (PER ROW TWO BLOCK) */}
+        <div className="featured-games-grid-2col">
           {filteredActiveGames.map((game) => (
             <div
               key={game.id}
-              className="lobby-featured-card"
+              className="lobby-featured-card-2col"
               onClick={() => handleLaunchGame(game.route)}
-              style={{
-                position: 'relative',
-                borderRadius: '20px',
-                overflow: 'hidden',
-                cursor: 'pointer',
-                minHeight: '120px',
-                display: 'flex',
-                alignItems: 'stretch',
-                border: `1px solid ${game.borderColor}55`,
-                boxShadow: `0 12px 32px rgba(0,0,0,0.65), 0 0 24px ${game.bgGlow}`,
-                transition: 'transform 0.22s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.22s ease',
-                background: '#050910',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-4px) scale(1.01)';
-                e.currentTarget.style.boxShadow = `0 20px 42px rgba(0,0,0,0.7), 0 0 36px ${game.bgGlow}`;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                e.currentTarget.style.boxShadow = `0 12px 32px rgba(0,0,0,0.65), 0 0 24px ${game.bgGlow}`;
-              }}
             >
-              {/* ── Full background image ── */}
-              <img
-                src={game.image}
-                alt={game.name}
-                style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', objectPosition:'center', opacity:0.35 }}
-              />
-
-              {/* ── Dark gradient overlay (left → transparent → right) ── */}
-              <div style={{
-                position:'absolute', inset:0,
-                background: `linear-gradient(105deg, rgba(5,9,16,0.97) 0%, rgba(5,9,16,0.88) 40%, rgba(5,9,16,0.45) 70%, rgba(5,9,16,0.15) 100%)`,
-              }}/>
-
-              {/* ── Accent colour glow from left edge ── */}
-              <div style={{
-                position:'absolute', left:0, top:0, bottom:0, width:'4px',
-                background: `linear-gradient(180deg, ${game.borderColor}00 0%, ${game.borderColor} 30%, ${game.borderColor} 70%, ${game.borderColor}00 100%)`,
-              }}/>
-
-              {/* ── Card thumbnail (right side) ── */}
-              <div style={{
-                position:'absolute', right:0, top:0, bottom:0, width:'140px',
-                overflow:'hidden',
-              }}>
+              {/* Top 4K Artwork Visual Container - Full Vibrant Opacity */}
+              <div className="card-media-wrap">
                 <img
                   src={game.image}
-                  alt=""
-                  style={{ width:'100%', height:'100%', objectFit:'cover', objectPosition:'center' }}
+                  alt={game.name}
+                  className="card-media-img"
+                  loading="eager"
                 />
-                <div style={{ position:'absolute', inset:0, background:'linear-gradient(to right, rgba(5,9,16,0.99) 0%, rgba(5,9,16,0.5) 50%, transparent 100%)' }}/>
-              </div>
 
-              {/* ── Content ── */}
-              <div style={{ position:'relative', zIndex:2, flex:1, padding:'14px 16px', display:'flex', flexDirection:'column', justifyContent:'space-between' }}>
+                {/* Subtle dark gradient overlay to blend into card body */}
+                <div className="card-media-gradient-overlay" />
 
-                {/* Top row: live tag + payout */}
-                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'6px' }}>
-                  <span style={{
-                    display:'inline-flex', alignItems:'center', gap:'4px',
-                    background: game.tagBg,
-                    color:'#fff', fontSize:'9px', fontWeight:900,
-                    padding:'3px 9px', borderRadius:'6px', letterSpacing:'0.5px',
-                    boxShadow: game.tagShadow,
-                    textTransform:'uppercase',
-                  }}>
+                {/* Overlaid Badges */}
+                <div className="card-top-badges">
+                  <span className="card-fire-badge">
+                    <Flame size={10} fill="#ffffff" color="#ffffff" className="fire-flicker" />
                     {game.tag}
                   </span>
-                  <span style={{ fontSize:'12px', fontWeight:900, color:'#fbbf24', letterSpacing:'-0.3px', textShadow:'0 0 10px rgba(251,191,36,0.5)' }}>
+                  <span className="card-payout-pill">
                     {game.payout}
                   </span>
                 </div>
+              </div>
 
-                {/* Game name */}
-                <div>
-                  <h3 style={{ margin:0, fontSize:'18px', fontWeight:900, color:'#fff', letterSpacing:'-0.4px', lineHeight:1.1, textShadow:'0 2px 8px rgba(0,0,0,0.5)' }}>
+              {/* Card Body Content */}
+              <div className="card-body-content">
+                <div className="card-info-header">
+                  <h3 className="card-game-title">
                     {game.name}
                   </h3>
-                  <p style={{ margin:'4px 0 0', fontSize:'11px', color:'#94a3b8', lineHeight:1.4, maxWidth:'58%' }}>
-                    {game.description}
-                  </p>
-                </div>
-
-                {/* Bottom row: badge + PLAY NOW */}
-                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginTop:'10px' }}>
-                  <div style={{ display:'flex', alignItems:'center', gap:'5px' }}>
-                    <Shield size={12} color="#34d399"/>
-                    <span style={{ fontSize:'10px', color:'#64748b', fontWeight:700 }}>{game.badge}</span>
+                  <div className="card-game-sub">
+                    <Shield size={11} color="#10b981" />
+                    <span>{game.badge}</span>
                   </div>
-
-                  <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); handleLaunchGame(game.route); }}
-                    style={{
-                      background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%)',
-                      color: '#1a0a00',
-                      border: 'none',
-                      borderRadius: '11px',
-                      padding: '8px 18px',
-                      fontSize: '12px',
-                      fontWeight: 900,
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '5px',
-                      boxShadow: '0 0 18px rgba(251,191,36,0.55), inset 0 1px 0 rgba(255,255,255,0.25)',
-                      letterSpacing: '0.3px',
-                      textTransform: 'uppercase',
-                      transition: 'all 0.15s',
-                      flexShrink: 0,
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.transform='scale(1.05)'; e.currentTarget.style.boxShadow='0 0 24px rgba(251,191,36,0.75)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.transform='scale(1)'; e.currentTarget.style.boxShadow='0 0 18px rgba(251,191,36,0.55)'; }}
-                  >
-                    <Play size={12} fill="#1a0a00" /> Play Now
-                  </button>
                 </div>
+
+                {/* Bright Glowing Fire PLAY NOW Action Button */}
+                <button
+                  type="button"
+                  className="card-fire-play-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleLaunchGame(game.route);
+                  }}
+                >
+                  <Flame size={13} fill="#ffffff" color="#ffffff" />
+                  <span>PLAY NOW</span>
+                  <Play size={10} fill="#ffffff" color="#ffffff" />
+                </button>
               </div>
             </div>
           ))}
