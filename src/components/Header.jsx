@@ -68,15 +68,15 @@ export const Header = ({
         top: 0,
         zIndex: 60,
         width: '100%',
-        background: 'linear-gradient(135deg, #1a0505 0%, #1c0808 30%, #0f0818 65%, #07050f 100%)',
+        background: 'rgba(10, 13, 20, 0.94)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        boxShadow: '0 1px 0 rgba(239,68,68,0.25), 0 4px 24px rgba(0,0,0,0.5)',
+        boxShadow: '0 1px 0 rgba(255,255,255,0.06), 0 8px 30px rgba(0,0,0,0.45)',
       }}>
-        {/* Red → Gold → Green accent stripe */}
+        {/* Sleek Golden-Cyan Accent Stripe */}
         <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0, height: '3px',
-          background: 'linear-gradient(90deg, #dc2626 0%, #ef4444 15%, #f59e0b 35%, #fbbf24 50%, #f59e0b 65%, #10b981 85%, #059669 100%)',
+          position: 'absolute', bottom: 0, left: 0, right: 0, height: '2px',
+          background: 'linear-gradient(90deg, transparent 0%, rgba(99, 102, 241, 0.4) 20%, rgba(251, 191, 36, 0.75) 50%, rgba(16, 185, 129, 0.4) 80%, transparent 100%)',
         }}/>
 
         {/* Inner max-width container */}
@@ -137,7 +137,7 @@ export const Header = ({
               <div
                 style={{
                   fontSize: '10px',
-                  background: 'linear-gradient(90deg,#ef4444,#fbbf24,#10b981)',
+                  background: 'linear-gradient(90deg, #f59e0b, #fbbf24)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   fontWeight: 700,
@@ -395,8 +395,8 @@ export const Header = ({
               openNotificationModal();
             }}
             style={{
-              background: 'linear-gradient(135deg,rgba(220,38,38,0.15),rgba(180,83,9,0.12))',
-              border: '1px solid rgba(239,68,68,0.35)',
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
               width: '38px',
               height: '38px',
               borderRadius: '50%',
@@ -407,7 +407,7 @@ export const Header = ({
               justifyContent: 'center',
               position: 'relative',
               flexShrink: 0,
-              boxShadow: '0 0 12px rgba(239,68,68,0.2)',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.3)',
               transition: 'transform 0.2s, background 0.2s',
             }}
             title="Notifications & Alerts"
@@ -449,14 +449,14 @@ export const Header = ({
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                background: 'linear-gradient(135deg,rgba(30,10,10,0.95),rgba(15,10,5,0.95))',
-                border: '1px solid rgba(245,158,11,0.5)',
+                background: 'rgba(16, 22, 34, 0.92)',
+                border: '1px solid rgba(251, 191, 36, 0.35)',
                 borderRadius: '14px',
                 padding: '4px 5px 4px 11px',
                 gap: '8px',
                 cursor: 'pointer',
                 flexShrink: 0,
-                boxShadow: '0 0 16px rgba(245,158,11,0.2), inset 0 1px 1px rgba(255,255,255,0.08)',
+                boxShadow: '0 4px 14px rgba(0, 0, 0, 0.35), inset 0 1px 1px rgba(255,255,255,0.08)',
               }}
               title="LuckyPlay Wallet & Bankroll"
             >

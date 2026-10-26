@@ -18,6 +18,7 @@ import {
   Activity,
   Clock,
   CheckCircle2,
+  Search,
 } from 'lucide-react';
 
 /* =========================================================================
@@ -408,12 +409,12 @@ export const Lobby = ({
         titleHighlight: 'FREE',
         subtitle: 'Play Live Games & Win Real Cash!',
         art: null,
-        bgGradient: 'linear-gradient(90deg, rgba(37, 4, 31, 0.98) 0%, rgba(40, 5, 33, 0.89) 40%, rgba(36, 4, 29, 0.08) 100%), url("/images/promo-welcome-premium.png") center / cover no-repeat',
-        border: '1.5px solid rgba(217, 70, 239, 0.45)',
-        boxShadow: '0 12px 36px -8px rgba(0, 0, 0, 0.7), 0 0 30px rgba(192, 38, 211, 0.25)',
-        btnBg: 'linear-gradient(135deg, rgba(217, 70, 239, 0.3) 0%, rgba(168, 85, 247, 0.3) 100%)',
-        btnBorder: '1.5px solid rgba(217, 70, 239, 0.6)',
-        btnShadow: '0 0 14px rgba(217, 70, 239, 0.6)',
+        bgGradient: 'linear-gradient(105deg, rgba(10, 13, 22, 0.97) 0%, rgba(16, 22, 38, 0.88) 45%, rgba(16, 22, 38, 0.15) 100%), url("/images/promo-welcome-premium.png") center / cover no-repeat',
+        border: '1px solid rgba(251, 191, 36, 0.35)',
+        boxShadow: '0 12px 32px rgba(0, 0, 0, 0.5), 0 0 24px rgba(251, 191, 36, 0.15)',
+        btnBg: 'rgba(251, 191, 36, 0.15)',
+        btnBorder: '1px solid rgba(251, 191, 36, 0.5)',
+        btnShadow: '0 0 14px rgba(251, 191, 36, 0.3)',
         action: () => {
           sound.playClick();
           setIsDepositModalOpen(true);
@@ -426,12 +427,12 @@ export const Lobby = ({
         titleHighlight: 'CASH',
         subtitle: 'Fly High in Realtime Crash & Cash Out!',
         art: null,
-        bgGradient: 'linear-gradient(90deg, rgba(49, 4, 10, 0.98) 0%, rgba(49, 4, 10, 0.88) 40%, rgba(49, 4, 10, 0.08) 100%), url("/images/promo-aviator-premium.png") center / cover no-repeat',
-        border: '1.5px solid rgba(244, 63, 94, 0.45)',
-        boxShadow: '0 12px 36px -8px rgba(0, 0, 0, 0.7), 0 0 30px rgba(244, 63, 94, 0.25)',
-        btnBg: 'linear-gradient(135deg, rgba(244, 63, 94, 0.3) 0%, rgba(225, 29, 72, 0.3) 100%)',
-        btnBorder: '1.5px solid rgba(244, 63, 94, 0.6)',
-        btnShadow: '0 0 14px rgba(244, 63, 94, 0.6)',
+        bgGradient: 'linear-gradient(105deg, rgba(14, 10, 18, 0.97) 0%, rgba(24, 14, 22, 0.88) 45%, rgba(24, 14, 22, 0.15) 100%), url("/images/promo-aviator-premium.png") center / cover no-repeat',
+        border: '1px solid rgba(244, 63, 94, 0.35)',
+        boxShadow: '0 12px 32px rgba(0, 0, 0, 0.5), 0 0 24px rgba(244, 63, 94, 0.15)',
+        btnBg: 'rgba(244, 63, 94, 0.15)',
+        btnBorder: '1px solid rgba(244, 63, 94, 0.5)',
+        btnShadow: '0 0 14px rgba(244, 63, 94, 0.3)',
         action: () => {
           sound.playClick();
           navigate('/aviator');
@@ -444,12 +445,12 @@ export const Lobby = ({
         titleHighlight: 'BONUS',
         subtitle: 'Instant Deposit Match & VIP Level Perks!',
         art: null,
-        bgGradient: 'linear-gradient(90deg, rgba(2, 38, 28, 0.98) 0%, rgba(2, 38, 28, 0.9) 40%, rgba(2, 38, 28, 0.08) 100%), url("/images/promo-vip-premium.png") center / cover no-repeat',
-        border: '1.5px solid rgba(52, 211, 153, 0.45)',
-        boxShadow: '0 12px 36px -8px rgba(0, 0, 0, 0.7), 0 0 30px rgba(16, 185, 129, 0.25)',
-        btnBg: 'linear-gradient(135deg, rgba(16, 185, 129, 0.3) 0%, rgba(5, 150, 105, 0.3) 100%)',
-        btnBorder: '1.5px solid rgba(52, 211, 153, 0.6)',
-        btnShadow: '0 0 14px rgba(16, 185, 129, 0.6)',
+        bgGradient: 'linear-gradient(105deg, rgba(8, 16, 16, 0.97) 0%, rgba(10, 26, 22, 0.88) 45%, rgba(10, 26, 22, 0.15) 100%), url("/images/promo-vip-premium.png") center / cover no-repeat',
+        border: '1px solid rgba(16, 185, 129, 0.35)',
+        boxShadow: '0 12px 32px rgba(0, 0, 0, 0.5), 0 0 24px rgba(16, 185, 129, 0.15)',
+        btnBg: 'rgba(16, 185, 129, 0.15)',
+        btnBorder: '1px solid rgba(16, 185, 129, 0.5)',
+        btnShadow: '0 0 14px rgba(16, 185, 129, 0.3)',
         action: () => {
           sound.playClick();
           if (onOpenVIP) onOpenVIP();
@@ -463,12 +464,12 @@ export const Lobby = ({
         titleHighlight: 'PER FRIEND',
         subtitle: 'Instant Bonus for Every Active Invite!',
         art: null,
-        bgGradient: 'linear-gradient(90deg, rgba(4, 15, 42, 0.98) 0%, rgba(4, 15, 42, 0.9) 40%, rgba(4, 15, 42, 0.08) 100%), url("/images/promo-refer-premium.png") center / cover no-repeat',
-        border: '1.5px solid rgba(96, 165, 250, 0.45)',
-        boxShadow: '0 12px 36px -8px rgba(0, 0, 0, 0.7), 0 0 30px rgba(59, 130, 246, 0.25)',
-        btnBg: 'linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(37, 99, 235, 0.3) 100%)',
-        btnBorder: '1.5px solid rgba(96, 165, 250, 0.6)',
-        btnShadow: '0 0 14px rgba(59, 130, 246, 0.6)',
+        bgGradient: 'linear-gradient(105deg, rgba(8, 14, 24, 0.97) 0%, rgba(13, 24, 44, 0.88) 45%, rgba(13, 24, 44, 0.15) 100%), url("/images/promo-refer-premium.png") center / cover no-repeat',
+        border: '1px solid rgba(14, 165, 233, 0.35)',
+        boxShadow: '0 12px 32px rgba(0, 0, 0, 0.5), 0 0 24px rgba(14, 165, 233, 0.15)',
+        btnBg: 'rgba(14, 165, 233, 0.15)',
+        btnBorder: '1px solid rgba(14, 165, 233, 0.5)',
+        btnShadow: '0 0 14px rgba(14, 165, 233, 0.3)',
         action: () => {
           sound.playClick();
           if (onOpenRefer) onOpenRefer();
@@ -697,34 +698,8 @@ export const Lobby = ({
   };
 
   return (
-    <div
-      className="lobby-shell"
-      style={{
-        maxWidth: '560px',
-        margin: '0 auto',
-        padding: '10px 12px 8px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '12px',
-        width: '100%',
-        boxSizing: 'border-box',
-      }}
-    >
-      <section className="lobby-hero-intro" aria-label="Premium casino lobby">
-        <div className="lobby-hero-copy">
-          <span className="lobby-hero-kicker"><Sparkles size={13} /> Premium Casino</span>
-          <h1>Play where every round feels legendary.</h1>
-          <p>Discover live tables, instant wins, and exclusive rewards in one private lounge.</p>
-          <button type="button" className="lobby-hero-cta" onClick={() => document.getElementById('featured-games-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
-            <Play size={15} fill="currentColor" /> Explore games
-          </button>
-        </div>
-        <div className="lobby-hero-stats" aria-label="Casino highlights">
-          <span><strong>24/7</strong> live tables</span>
-          <span><strong>Fast</strong> payouts</span>
-        </div>
-      </section>
-      {/* 1. HERO PROMO BANNER CAROUSEL SLIDER (LEFT TO RIGHT ONLY SLIDE EFFECT) */}
+    <div className="lobby-shell">
+      {/* 1. COMPACT HERO PROMO BANNER CAROUSEL SLIDER */}
       <div
         className="promo-slider-container lobby-promos"
         onMouseEnter={() => setIsPaused(true)}
@@ -747,11 +722,13 @@ export const Lobby = ({
                 boxShadow: promoSlides[activePromoIndex].boxShadow,
               }}
             >
-              {promoSlides[activePromoIndex].art}
               <div style={{ flex: 1, minWidth: 0, zIndex: 2 }}>
                 <div className="promo-bonus-badge">{promoSlides[activePromoIndex].badge}</div>
                 <div className="promo-bonus-title">
-                  {promoSlides[activePromoIndex].titleMain} <span style={{ color: '#ffe066' }}>{promoSlides[activePromoIndex].titleHighlight}</span>
+                  {promoSlides[activePromoIndex].titleMain}{' '}
+                  <span style={{ color: '#fbbf24', textShadow: '0 0 14px rgba(251, 191, 36, 0.6)' }}>
+                    {promoSlides[activePromoIndex].titleHighlight}
+                  </span>
                 </div>
                 <div className="promo-bonus-subtitle">{promoSlides[activePromoIndex].subtitle}</div>
               </div>
@@ -760,7 +737,7 @@ export const Lobby = ({
                 className="promo-nav-btn"
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleNextPromo();
+                  handleNextPromo(e);
                 }}
                 style={{
                   background: promoSlides[activePromoIndex].btnBg,
@@ -769,7 +746,7 @@ export const Lobby = ({
                 }}
                 aria-label={`Next from slide ${activePromoIndex + 1}`}
               >
-                <ChevronRight size={20} />
+                <ChevronRight size={18} />
               </button>
             </div>
           </div>
@@ -793,12 +770,6 @@ export const Lobby = ({
         </div>
       </div>
 
-      <div className="lobby-value-row" aria-label="Lobby benefits">
-        <div><Shield size={15} /><span><strong>Secure play</strong>Protected wallet</span></div>
-        <div><Zap size={15} /><span><strong>Instant action</strong>Live rounds now</span></div>
-        <div><Crown size={15} /><span><strong>VIP rewards</strong>More every day</span></div>
-      </div>
-
       {/* 2. CATEGORY FILTER TABS */}
       <div className="category-filter-row lobby-category-rail">
         {categories.map((cat) => {
@@ -820,22 +791,41 @@ export const Lobby = ({
         })}
       </div>
 
-      {/* 3. FEATURED LIVE REALTIME GAMES (THE 3 ACTIVE GAMES) */}
-      <div id="featured-games-section" className="lobby-featured-section" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      {/* 3. REALTIME LIVE WINNERS TICKER BAR */}
+      <div className="lobby-winners-ticker">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden', minWidth: 0 }}>
+          <span className="live-pulse-dot" />
+          <span style={{ fontWeight: 900, color: '#fbbf24', fontSize: '10px', letterSpacing: '0.6px', textTransform: 'uppercase', flexShrink: 0 }}>
+            Recent Win:
+          </span>
+          <span
+            style={{
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              opacity: isTickerFading ? 0 : 1,
+              transition: 'opacity 0.3s ease',
+              fontSize: '11px',
+            }}
+          >
+            <strong style={{ color: '#fff' }}>{INDIAN_WINNERS_POOL[currentWinnerIndex].name}</strong> won{' '}
+            <strong style={{ color: '#10b981' }}>+₹{INDIAN_WINNERS_POOL[currentWinnerIndex].amount}</strong> on{' '}
+            <span style={{ color: '#cbd5e1' }}>{INDIAN_WINNERS_POOL[currentWinnerIndex].game}</span>{' '}
+            <span style={{ color: '#fbbf24', fontWeight: 800 }}>({INDIAN_WINNERS_POOL[currentWinnerIndex].mult})</span>
+          </span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0, color: '#34d399', fontSize: '10px', fontWeight: 700 }}>
+          <Shield size={12} />
+          <span className="mobile-hide">Provably Fair</span>
+        </div>
+      </div>
+
+      {/* 5. FEATURED LIVE REALTIME GAMES (THE 3 ACTIVE GAMES) */}
+      <div id="featured-games-section" className="lobby-featured-section">
         <div className="section-header-row">
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span
-              style={{
-                width: '10px',
-                height: '10px',
-                borderRadius: '50%',
-                background: '#10b981',
-                boxShadow: '0 0 12px #10b981',
-                display: 'inline-block',
-                animation: 'pulse 1.5s infinite',
-              }}
-            />
-            <span className="section-title-text" style={{ fontSize: '17px', fontWeight: 900, color: '#f8fafc' }}>
+            <span className="live-pulse-dot" />
+            <span className="section-title-text">
               Live Multiplayer Games
             </span>
           </div>
@@ -848,14 +838,17 @@ export const Lobby = ({
               padding: '3px 10px',
               borderRadius: '20px',
               border: '1px solid rgba(16, 185, 129, 0.3)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
             }}
           >
-            3 ACTIVE NOW
+            <Activity size={12} /> 3 ACTIVE NOW
           </span>
         </div>
 
-        {/* 3 HERO ACTIVE GAME CARDS */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        {/* 3 HERO ACTIVE GAME CARDS IN RESPONSIVE GRID */}
+        <div className="featured-games-grid">
           {filteredActiveGames.map((game) => (
             <div
               key={game.id}
@@ -986,10 +979,11 @@ export const Lobby = ({
       </div>
 
       {/* 4. ALL GAMES & POPULAR GRID (3x2 Grid) */}
-      <div id="popular-games-section" className="lobby-games-section" style={{ marginTop: '6px' }}>
+      {/* 6. ALL GAMES & POPULAR GRID */}
+      <div id="popular-games-section" className="lobby-games-section">
         <div className="section-header-row">
           <span className="section-title-text">All Casino & Card Games</span>
-          <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>
+          <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 700 }}>
             {filteredActiveGames.length + filteredAdditionalGames.length} Games Available
           </span>
         </div>
@@ -1003,9 +997,8 @@ export const Lobby = ({
               onClick={() => handleLaunchGame(game.route)}
               className="lucky-card-item"
               style={{
-                borderColor: game.borderColor,
-                boxShadow: `0 8px 24px rgba(0,0,0,0.6), 0 0 16px ${game.borderColor}60`,
-                cursor: 'pointer',
+                borderColor: `${game.borderColor}66`,
+                boxShadow: `0 8px 24px rgba(0,0,0,0.5), 0 0 16px ${game.borderColor}30`,
               }}
             >
               <img
@@ -1025,7 +1018,7 @@ export const Lobby = ({
                   fontWeight: 900,
                   padding: '2px 6px',
                   borderRadius: '4px',
-                  boxShadow: '0 0 8px rgba(0,0,0,0.8)',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.6)',
                   zIndex: 3,
                 }}
               >
@@ -1045,8 +1038,7 @@ export const Lobby = ({
               className="lucky-card-item"
               style={{
                 borderColor: game.borderColor,
-                boxShadow: `0 8px 24px rgba(0,0,0,0.6), 0 0 16px ${game.borderColor}40`,
-                cursor: 'pointer',
+                boxShadow: `0 8px 24px rgba(0,0,0,0.5), 0 0 14px ${game.borderColor}25`,
               }}
             >
               <img
@@ -1068,41 +1060,84 @@ export const Lobby = ({
             </div>
           ))}
         </div>
-      </div>
 
-      {/* 5. LIVE WINNERS TICKER BAR */}
-      <div
-        className="lobby-winners-ticker"
-        style={{
-          marginTop: '6px',
-          padding: '8px 12px',
-          background: 'rgba(19, 15, 42, 0.75)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
-          borderRadius: '14px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          fontSize: '11px',
-          color: '#cbd5e1',
-          boxShadow: '0 4px 14px rgba(0,0,0,0.4)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
-          <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981', flexShrink: 0 }} />
-          <span style={{ fontWeight: 800, color: '#ffe066', flexShrink: 0 }}>Recent Win:</span>
-          <span
+        {/* Empty State when Search has no matches */}
+        {filteredActiveGames.length === 0 && filteredAdditionalGames.length === 0 && (
+          <div
             style={{
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              opacity: isTickerFading ? 0 : 1,
-              transition: 'opacity 0.3s ease',
+              padding: '40px 20px',
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px',
             }}
           >
-            <strong style={{ color: '#fff' }}>{INDIAN_WINNERS_POOL[currentWinnerIndex].name}</strong> won{' '}
-            <strong style={{ color: '#10b981' }}>+₹{INDIAN_WINNERS_POOL[currentWinnerIndex].amount}</strong> on{' '}
-            {INDIAN_WINNERS_POOL[currentWinnerIndex].game}
-          </span>
+            <Search size={36} color="#64748b" />
+            <div style={{ fontSize: '16px', fontWeight: 800, color: '#f8fafc' }}>
+              No games found matching "{searchQuery}"
+            </div>
+            <div style={{ fontSize: '13px', color: '#94a3b8' }}>
+              Try searching for Aviator, Color, Dice, or select the "All" category.
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 5. PLATFORM VALUE PROPOSITIONS */}
+      <div className="lobby-value-row" aria-label="Lobby benefits">
+        <div className="lobby-value-card">
+          <Shield size={18} color="#34d399" />
+          <div className="value-card-text">
+            <strong>Secure Play</strong>
+            <span>Protected Wallet & 256-bit SSL</span>
+          </div>
+        </div>
+        <div className="lobby-value-card">
+          <Zap size={18} color="#fbbf24" />
+          <div className="value-card-text">
+            <strong>Instant Action</strong>
+            <span>30s Realtime Rounds</span>
+          </div>
+        </div>
+        <div className="lobby-value-card">
+          <Crown size={18} color="#a855f7" />
+          <div className="value-card-text">
+            <strong>VIP Rewards</strong>
+            <span>Daily Cash & Level Perks</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 6. TRUST & PROVABLY FAIR GUARANTEE BAR */}
+      <div
+        style={{
+          padding: '16px 20px',
+          background: 'rgba(16, 22, 34, 0.7)',
+          border: '1px solid rgba(255, 255, 255, 0.07)',
+          borderRadius: '18px',
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: 'space-around',
+          gap: '14px',
+          fontSize: '12px',
+          color: '#94a3b8',
+          backdropFilter: 'blur(10px)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Shield size={16} color="#34d399" />
+          <span><strong style={{ color: '#f8fafc' }}>100% Provably Fair</strong> SHA-256 Hashes</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Zap size={16} color="#fbbf24" />
+          <span><strong style={{ color: '#f8fafc' }}>Instant Automated</strong> Wallet Settlements</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <CheckCircle2 size={16} color="#60a5fa" />
+          <span><strong style={{ color: '#f8fafc' }}>24/7 Monitored</strong> Certified Platform</span>
         </div>
       </div>
     </div>
