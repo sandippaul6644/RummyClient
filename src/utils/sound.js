@@ -20,6 +20,7 @@ class SoundManager {
   constructor() {
     this.enabled = true;
     this.ctx = null;
+    this.masterVolume = 1.0;
 
     // Flight synthesizer nodes
     this._flightNodes = null;
@@ -62,7 +63,7 @@ class SoundManager {
       osc.type = 'sine';
       osc.frequency.setValueAtTime(800, this.ctx.currentTime);
       osc.frequency.exponentialRampToValueAtTime(400, this.ctx.currentTime + 0.05);
-      gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+      gain.gain.setValueAtTime(0.25 * this.masterVolume, this.ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.05);
       osc.connect(gain);
       gain.connect(this.ctx.destination);
@@ -81,7 +82,7 @@ class SoundManager {
         osc.type = 'sine';
         osc.frequency.setValueAtTime(300 + Math.random() * 450, time);
         osc.frequency.exponentialRampToValueAtTime(100, time + 0.04);
-        gain.gain.setValueAtTime(0.15, time);
+        gain.gain.setValueAtTime(0.28 * this.masterVolume, time);
         gain.gain.exponentialRampToValueAtTime(0.001, time + 0.04);
         osc.connect(gain);
         gain.connect(this.ctx.destination);
@@ -98,7 +99,7 @@ class SoundManager {
       const gain = this.ctx.createGain();
       osc.type = 'sine';
       osc.frequency.setValueAtTime(isHigh ? 880 : 440, this.ctx.currentTime);
-      gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+      gain.gain.setValueAtTime(0.28 * this.masterVolume, this.ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.1);
       osc.connect(gain);
       gain.connect(this.ctx.destination);
@@ -111,17 +112,17 @@ class SoundManager {
     if (!this.enabled || !this.init() || !this.ctx) return;
     try {
       const now = this.ctx.currentTime;
-      [320, 260].forEach((freq, idx) => {
+      [340, 270].forEach((freq, idx) => {
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-        osc.type = 'sine';
+        osc.type = 'triangle';
         osc.frequency.setValueAtTime(freq, now + idx * 0.09);
-        gain.gain.setValueAtTime(0.14, now + idx * 0.09);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.09 + 0.08);
+        gain.gain.setValueAtTime(0.32 * this.masterVolume, now + idx * 0.09);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.09 + 0.09);
         osc.connect(gain);
         gain.connect(this.ctx.destination);
         osc.start(now + idx * 0.09);
-        osc.stop(now + idx * 0.09 + 0.08);
+        osc.stop(now + idx * 0.09 + 0.09);
       });
     } catch {}
   }
@@ -135,12 +136,12 @@ class SoundManager {
         const gain = this.ctx.createGain();
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(freq, this.ctx.currentTime + index * 0.08);
-        gain.gain.setValueAtTime(0.18, this.ctx.currentTime + index * 0.08);
-        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + index * 0.08 + 0.2);
+        gain.gain.setValueAtTime(0.35 * this.masterVolume, this.ctx.currentTime + index * 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + index * 0.08 + 0.22);
         osc.connect(gain);
         gain.connect(this.ctx.destination);
         osc.start(this.ctx.currentTime + index * 0.08);
-        osc.stop(this.ctx.currentTime + index * 0.08 + 0.2);
+        osc.stop(this.ctx.currentTime + index * 0.08 + 0.22);
       });
     } catch {}
   }
@@ -150,31 +151,31 @@ class SoundManager {
     if (!this.enabled || !this.init() || !this.ctx) return;
     try {
       const now = this.ctx.currentTime;
-      // Sub-bass crash explosion
+      // Deep sub-bass crash explosion
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
       osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(160, now);
-      osc.frequency.exponentialRampToValueAtTime(32, now + 0.4);
-      gain.gain.setValueAtTime(0.25, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+      osc.frequency.setValueAtTime(170, now);
+      osc.frequency.exponentialRampToValueAtTime(28, now + 0.45);
+      gain.gain.setValueAtTime(0.50 * this.masterVolume, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
       osc.connect(gain);
       gain.connect(this.ctx.destination);
       osc.start(now);
-      osc.stop(now + 0.4);
+      osc.stop(now + 0.45);
 
       // Noise explosion burst
-      const bufferSize = this.ctx.sampleRate * 0.35;
+      const bufferSize = Math.floor(this.ctx.sampleRate * 0.4);
       const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
       const output = buffer.getChannelData(0);
       for (let i = 0; i < bufferSize; i++) {
-        output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (this.ctx.sampleRate * 0.08));
+        output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (this.ctx.sampleRate * 0.09));
       }
       const noise = this.ctx.createBufferSource();
       noise.buffer = buffer;
       const noiseGain = this.ctx.createGain();
-      noiseGain.gain.setValueAtTime(0.18, now);
-      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+      noiseGain.gain.setValueAtTime(0.35 * this.masterVolume, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
       noise.connect(noiseGain);
       noiseGain.connect(this.ctx.destination);
       noise.start(now);
@@ -185,25 +186,25 @@ class SoundManager {
     if (!this.enabled || !this.init() || !this.ctx) return;
     try {
       const now = this.ctx.currentTime;
-      // Sparkling success double chime
-      [587.33, 880, 1174.66].forEach((freq, idx) => {
+      // Sparkling success victory chime
+      [587.33, 880, 1174.66, 1479.98].forEach((freq, idx) => {
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, now + idx * 0.06);
-        gain.gain.setValueAtTime(0.2, now + idx * 0.06);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.22);
+        osc.frequency.setValueAtTime(freq, now + idx * 0.055);
+        gain.gain.setValueAtTime(0.38 * this.masterVolume, now + idx * 0.055);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.055 + 0.25);
         osc.connect(gain);
         gain.connect(this.ctx.destination);
-        osc.start(now + idx * 0.06);
-        osc.stop(now + idx * 0.06 + 0.22);
+        osc.start(now + idx * 0.055);
+        osc.stop(now + idx * 0.055 + 0.25);
       });
     } catch {}
   }
 
   /**
    * Continuous Flight Engine Hum & Jet Afterburner Sound
-   * Smooth, enjoyable, builds thrilling suspense as multiplier increases.
+   * Punchy, exhilarating, builds thrilling suspense as multiplier increases.
    */
   startFlightSound() {
     if (!this.enabled || !this.init() || !this.ctx) return;
@@ -212,27 +213,26 @@ class SoundManager {
     try {
       const now = this.ctx.currentTime;
 
-      // 1. Low engine drone (sub-rumble)
+      // 1. Low engine drone (deep rumble)
       const rumbleOsc = this.ctx.createOscillator();
-      rumbleOsc.type = 'triangle';
-      rumbleOsc.frequency.setValueAtTime(75, now);
+      rumbleOsc.type = 'sawtooth';
+      rumbleOsc.frequency.setValueAtTime(80, now);
 
       // 2. Jet turbine spool whistle
       const turbineOsc = this.ctx.createOscillator();
       turbineOsc.type = 'sine';
-      turbineOsc.frequency.setValueAtTime(260, now);
+      turbineOsc.frequency.setValueAtTime(290, now);
 
-      // Lowpass filter to keep sound soft and pleasant
+      // Lowpass filter to sculpt rich jet presence
       const filter = this.ctx.createBiquadFilter();
       filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(450, now);
-      filter.Q.setValueAtTime(1.5, now);
+      filter.frequency.setValueAtTime(550, now);
+      filter.Q.setValueAtTime(2.0, now);
 
-      // Master flight gain
+      // Master flight gain (boosted to prominent audible level)
       const masterGain = this.ctx.createGain();
       masterGain.gain.setValueAtTime(0.0001, now);
-      // Soft fade-in over 0.25s (comfortable volume)
-      masterGain.gain.linearRampToValueAtTime(0.09, now + 0.25);
+      masterGain.gain.linearRampToValueAtTime(0.30 * this.masterVolume, now + 0.18);
 
       rumbleOsc.connect(filter);
       turbineOsc.connect(filter);
@@ -256,16 +256,19 @@ class SoundManager {
     try {
       const mult = Math.max(1, Math.min(multiplier, 25));
       const now = this.ctx.currentTime;
-      // Rumble climbs gently from 75Hz to 160Hz
-      const rumbleFreq = 75 + Math.log2(mult) * 22;
-      // Turbine climbs smoothly from 260Hz to 620Hz
-      const turbineFreq = 260 + Math.log2(mult) * 75;
-      // Filter opens up for brighter jet presence
-      const filterFreq = Math.min(1800, 450 + Math.log2(mult) * 240);
+      // Rumble climbs from 80Hz to 180Hz
+      const rumbleFreq = 80 + Math.log2(mult) * 26;
+      // Turbine climbs from 290Hz to 720Hz
+      const turbineFreq = 290 + Math.log2(mult) * 95;
+      // Filter opens up for brighter, roaring afterburner sound
+      const filterFreq = Math.min(2400, 550 + Math.log2(mult) * 380);
+      // Dynamic volume growth as rocket gains supersonic speed
+      const dynamicGain = Math.min(0.48, (0.30 + Math.log2(mult) * 0.04)) * this.masterVolume;
 
-      this._flightNodes.rumbleOsc.frequency.setTargetAtTime(rumbleFreq, now, 0.1);
-      this._flightNodes.turbineOsc.frequency.setTargetAtTime(turbineFreq, now, 0.1);
-      this._flightNodes.filter.frequency.setTargetAtTime(filterFreq, now, 0.1);
+      this._flightNodes.rumbleOsc.frequency.setTargetAtTime(rumbleFreq, now, 0.08);
+      this._flightNodes.turbineOsc.frequency.setTargetAtTime(turbineFreq, now, 0.08);
+      this._flightNodes.filter.frequency.setTargetAtTime(filterFreq, now, 0.08);
+      this._flightNodes.masterGain.gain.setTargetAtTime(dynamicGain, now, 0.08);
     } catch {}
   }
 
@@ -276,7 +279,7 @@ class SoundManager {
       this._flightNodes = null;
       if (this.ctx) {
         const now = this.ctx.currentTime;
-        nodes.masterGain.gain.setTargetAtTime(0.0001, now, 0.08);
+        nodes.masterGain.gain.setTargetAtTime(0.0001, now, 0.06);
         setTimeout(() => {
           try {
             nodes.rumbleOsc.stop();
@@ -286,7 +289,7 @@ class SoundManager {
             nodes.filter.disconnect();
             nodes.masterGain.disconnect();
           } catch {}
-        }, 120);
+        }, 100);
       }
     } catch {
       this._flightNodes = null;
