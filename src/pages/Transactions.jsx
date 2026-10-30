@@ -5,7 +5,7 @@ import { sound } from '../utils/sound.js';
 import { History, ArrowDownRight, ArrowUpRight, Coins, Trophy, RefreshCw, Filter } from 'lucide-react';
 
 export const Transactions = () => {
-  const { user, wallet } = useAuth();
+  const { user, wallet, setIsAuthModalOpen } = useAuth();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -29,6 +29,73 @@ export const Transactions = () => {
       fetchTxs();
     }
   }, [user]);
+
+  if (!user) {
+    return (
+      <div
+        className="glass-panel"
+        style={{
+          maxWidth: '440px',
+          margin: '40px auto',
+          textAlign: 'center',
+          padding: '36px 24px',
+          borderRadius: '24px',
+          background: 'linear-gradient(180deg, rgba(13, 20, 36, 0.98) 0%, rgba(7, 10, 20, 0.99) 100%)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.85)',
+        }}
+      >
+        <div
+          style={{
+            width: '64px',
+            height: '64px',
+            borderRadius: '20px',
+            background: 'linear-gradient(135deg, rgba(0, 230, 118, 0.2) 0%, rgba(56, 189, 248, 0.2) 100%)',
+            border: '1px solid rgba(0, 230, 118, 0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 18px',
+            boxShadow: '0 0 25px rgba(0, 230, 118, 0.3)',
+          }}
+        >
+          <Coins size={32} color="#00e676" />
+        </div>
+
+        <h3 style={{ fontSize: '20px', fontWeight: 900, color: '#ffffff', margin: '0 0 8px' }}>
+          Sign In to Access Wallet & Ledger
+        </h3>
+        <p style={{ fontSize: '13px', color: '#94a3b8', margin: '0 0 24px', lineHeight: 1.5 }}>
+          Please log in or create an account to view your live balance, deposits, withdrawals, and ledger history.
+        </p>
+
+        <button
+          onClick={() => {
+            sound.playClick();
+            setIsAuthModalOpen(true);
+          }}
+          style={{
+            padding: '14px 20px',
+            borderRadius: '14px',
+            background: 'linear-gradient(135deg, #00e676 0%, #059669 100%)',
+            border: 'none',
+            color: '#ffffff',
+            fontSize: '15px',
+            fontWeight: 900,
+            cursor: 'pointer',
+            boxShadow: '0 0 25px rgba(0, 230, 118, 0.45)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            width: '100%',
+          }}
+        >
+          Sign In / Register
+        </button>
+      </div>
+    );
+  }
 
   const filtered = transactions.filter((t) => {
     if (filter === 'all') return true;

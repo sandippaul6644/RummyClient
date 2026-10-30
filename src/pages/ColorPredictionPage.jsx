@@ -1,16 +1,42 @@
-import React from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { ColourGame } from '../games/colour/ColourGame.jsx';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ShieldCheck, Flame } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import { sound } from '../utils/sound.js';
 
 export const ColorPredictionPage = () => {
   const navigate = useNavigate();
 
+  // Dynamic header colors synchronized from live ColourGame state
+  const [headerColors, setHeaderColors] = useState([
+    { id: 'GREEN', solid: '#10b981', glow: '16,185,129' },
+    { id: 'VIOLET', solid: '#a855f7', glow: '168,85,247' },
+    { id: 'RED', solid: '#ef4444', glow: '239,68,68' },
+  ]);
+
   const handleBack = () => {
     sound.playClick();
     navigate('/');
   };
+
+  const handleColorsChange = useCallback((colors) => {
+    if (colors && colors.length > 0) {
+      setHeaderColors(colors);
+    }
+  }, []);
+
+  // Compute smooth, explicit-stop gradient across all active colors for title & divider
+  const dynamicTitleGradient = useMemo(() => {
+    if (!headerColors || headerColors.length === 0) {
+      return 'linear-gradient(90deg, #10b981 0%, #a855f7 50%, #ef4444 100%)';
+    }
+    const solids = headerColors.map((c) => c.solid || '#10b981');
+    if (solids.length === 1) return solids[0];
+    if (solids.length === 2) return `linear-gradient(90deg, ${solids[0]} 0%, ${solids[1]} 100%)`;
+    if (solids.length === 3) return `linear-gradient(90deg, ${solids[0]} 0%, ${solids[1]} 50%, ${solids[2]} 100%)`;
+    const step = 100 / (solids.length - 1);
+    return `linear-gradient(90deg, ${solids.map((s, idx) => `${s} ${(idx * step).toFixed(0)}%`).join(', ')})`;
+  }, [headerColors]);
 
   return (
     <div style={{ maxWidth: '720px', margin: '0 auto', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -47,22 +73,55 @@ export const ColorPredictionPage = () => {
           <ChevronLeft size={15} /> Back
         </button>
 
-        {/* Centre: Game title */}
+        {/* Centre: Game title with dynamic dots and dynamic title gradient */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <div style={{ display: 'flex', gap: '3.5px' }}>
-              {['#ef4444','#10b981','#a855f7'].map(c => (
-                <div key={c} style={{ width: 8, height: 8, borderRadius: '50%', background: c, boxShadow: `0 0 6px ${c}` }}/>
+            <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+              {headerColors.map((c) => (
+                <div
+                  key={c.id || c.solid}
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    background: c.solid || '#10b981',
+                    boxShadow: `0 0 7px ${c.solid || '#10b981'}`,
+                  }}
+                />
               ))}
             </div>
-            <span style={{
-              fontSize: '14.5px', fontWeight: 900, letterSpacing: '0.3px',
-              background: 'linear-gradient(90deg, #f87171 0%, #34d399 50%, #c084fc 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}>
-              Colour Prediction
-            </span>
+            <svg
+              viewBox="0 0 156 20"
+              style={{
+                height: '19px',
+                width: '150px',
+                display: 'inline-block',
+                verticalAlign: 'middle',
+                overflow: 'visible',
+              }}
+            >
+              <defs>
+                <linearGradient id="headerTitleDynamicGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  {headerColors.map((c, idx) => {
+                    const offset = headerColors.length > 1
+                      ? `${((idx / (headerColors.length - 1)) * 100).toFixed(0)}%`
+                      : '0%';
+                    return <stop key={c.id || idx} offset={offset} stopColor={c.solid || '#10b981'} />;
+                  })}
+                </linearGradient>
+              </defs>
+              <text
+                x="0"
+                y="15.5"
+                fill="url(#headerTitleDynamicGrad)"
+                fontSize="15.5"
+                fontWeight="900"
+                letterSpacing="0.4"
+                fontFamily="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+              >
+                Colour Prediction
+              </text>
+            </svg>
           </div>
           <span style={{ fontSize: '9px', color: '#64748b', fontWeight: 700, letterSpacing: '0.8px', textTransform: 'uppercase', marginTop: '1px' }}>
             PROVABLY FAIR · HMAC-SHA256
@@ -83,11 +142,12 @@ export const ColorPredictionPage = () => {
         </div>
       </div>
 
-      <div style={{ height: '2px', background: 'linear-gradient(90deg,#ef4444 0%,#10b981 50%,#a855f7 100%)', opacity: 0.85 }}/>
+      {/* Dynamic top gradient divider */}
+      <div style={{ height: '2px', background: dynamicTitleGradient, opacity: 0.85 }}/>
 
-      {/* Game content */}
+      {/* Game content with callback */}
       <div style={{ padding: '8px 10px 24px', flex: 1 }}>
-        <ColourGame />
+        <ColourGame onColorsChange={handleColorsChange} />
       </div>
 
       <style>{`

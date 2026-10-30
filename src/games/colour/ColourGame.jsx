@@ -72,17 +72,22 @@ export const COLOR_MAP = DEFAULT_COLOR_OPTIONS.reduce((acc, c) => {
   return acc;
 }, {});
 
-export const resultGrad = (colors = []) => {
+export const resultGrad = (colors = [], customColorMap = null) => {
+  const map = customColorMap || COLOR_MAP;
   const c = colors.map((x) => String(x).toUpperCase());
   if (c.includes("RED") && c.includes("VIOLET")) {
-    return "linear-gradient(135deg, #ff4b63 50%, #a855f7 50%)";
+    const rCol = map.RED?.solid || "#ff4b63";
+    const vCol = map.VIOLET?.solid || "#a855f7";
+    return `linear-gradient(135deg, ${rCol} 50%, ${vCol} 50%)`;
   }
   if (c.includes("GREEN") && c.includes("VIOLET")) {
-    return "linear-gradient(135deg, #00f59b 50%, #a855f7 50%)";
+    const gCol = map.GREEN?.solid || "#00f59b";
+    const vCol = map.VIOLET?.solid || "#a855f7";
+    return `linear-gradient(135deg, ${gCol} 50%, ${vCol} 50%)`;
   }
-  if (c.includes("GREEN")) return COLOR_MAP.GREEN.grad;
-  if (c.includes("RED")) return COLOR_MAP.RED.grad;
-  if (c.includes("VIOLET")) return COLOR_MAP.VIOLET.grad;
+  if (c.includes("GREEN")) return map.GREEN?.grad || `linear-gradient(135deg, ${map.GREEN?.solid || "#10b981"} 0%, #047857 100%)`;
+  if (c.includes("RED")) return map.RED?.grad || `linear-gradient(135deg, ${map.RED?.solid || "#ef4444"} 0%, #b91c1c 100%)`;
+  if (c.includes("VIOLET")) return map.VIOLET?.grad || `linear-gradient(135deg, ${map.VIOLET?.solid || "#a855f7"} 0%, #7c3aed 100%)`;
   return "linear-gradient(135deg, #10b981 0%, #a855f7 100%)";
 };
 
@@ -131,7 +136,7 @@ const CHIPS = [
   },
 ];
 
-export const ColourGame = ({ colors: propColors } = {}) => {
+export const ColourGame = ({ colors: propColors, onColorsChange } = {}) => {
   const {
     user,
     wallet,
@@ -142,16 +147,23 @@ export const ColourGame = ({ colors: propColors } = {}) => {
 
   const [gameConfig, setGameConfig] = useState(null);
   const [payoutConfig, setPayoutConfig] = useState(null);
+  const [serverColorOptions, setServerColorOptions] = useState(null);
 
   // Dynamic colors list — merges live server payout multipliers with configured palette
   const rawColors =
-    propColors && propColors.length > 0 ? propColors : DEFAULT_COLOR_OPTIONS;
+    propColors && propColors.length > 0
+      ? propColors
+      : (serverColorOptions || gameConfig?.colorOptions || DEFAULT_COLOR_OPTIONS);
 
   const colorOptions = useMemo(() => {
     return rawColors.map((c) => {
       const cfg = payoutConfig?.[c.id];
       const payoutVal =
-        cfg?.payoutMultiplier != null ? Number(cfg.payoutMultiplier) : c.payout;
+        cfg?.payoutMultiplier != null
+          ? Number(cfg.payoutMultiplier)
+          : c.payout != null
+          ? Number(c.payout)
+          : 2.0;
       const mult = `${payoutVal.toFixed(1)}×`;
       return {
         ...c,
@@ -172,6 +184,13 @@ export const ColourGame = ({ colors: propColors } = {}) => {
     const max = Math.max(...colorOptions.map((c) => Number(c.payout) || 2.0));
     return `${max.toFixed(1)}×`;
   }, [colorOptions]);
+
+  // Notify parent pages (e.g. ColorPredictionPage header) of active dynamic colors
+  useEffect(() => {
+    if (colorOptions && colorOptions.length > 0) {
+      onColorsChange?.(colorOptions);
+    }
+  }, [colorOptions, onColorsChange]);
 
   const [roundId, setRoundId] = useState(null);
   const [roundNumber, setRoundNumber] = useState(null);
@@ -209,6 +228,9 @@ export const ColourGame = ({ colors: propColors } = {}) => {
         setGameConfig(gr.data.data);
         if (gr.data.data.payoutConfig) {
           setPayoutConfig(gr.data.data.payoutConfig);
+        }
+        if (gr.data.data.colorOptions && Array.isArray(gr.data.data.colorOptions)) {
+          setServerColorOptions(gr.data.data.colorOptions);
         }
         const r = gr.data.data.currentRound;
         if (r) {
@@ -322,6 +344,15 @@ export const ColourGame = ({ colors: propColors } = {}) => {
       setLiveBets((prev) => [bet, ...prev.slice(0, 19)]),
     );
 
+    socket.on("colour:config:updated", (data) => {
+      if (data?.colorOptions && Array.isArray(data.colorOptions)) {
+        setServerColorOptions(data.colorOptions);
+      }
+      if (data?.payoutConfig) {
+        setPayoutConfig(data.payoutConfig);
+      }
+    });
+
     return () => {
       socket.emit("game:leave", { gameSlug: "colour" });
       [
@@ -332,6 +363,7 @@ export const ColourGame = ({ colors: propColors } = {}) => {
         "colour:round:result",
         "colour:round:settled",
         "colour:bet:placed",
+        "colour:config:updated",
       ].forEach((ev) => socket.off(ev));
     };
   }, [loadGame, loadMyBets, refreshWallet]);
@@ -709,7 +741,7 @@ export const ColourGame = ({ colors: propColors } = {}) => {
               width: 48,
               height: 48,
               borderRadius: "50%",
-              background: resultGrad(lastResult.colors || []),
+              background: resultGrad(lastResult.colors || [], activeColorMap),
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -722,7 +754,7 @@ export const ColourGame = ({ colors: propColors } = {}) => {
             }}
           >
             <span style={{ filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.6))" }}>
-              {COLOR_MAP[lastResult.colors?.[0]]?.emoji || "💎"}
+              {(activeColorMap[lastResult.colors?.[0]] || COLOR_MAP[lastResult.colors?.[0]])?.emoji || "💎"}
             </span>
           </div>
 
@@ -837,21 +869,48 @@ export const ColourGame = ({ colors: propColors } = {}) => {
             </span>
           </div>
 
-          <span
-            style={{
-              fontSize: "10.5px",
-              fontWeight: 800,
-              padding: "3px 10px",
-              borderRadius: "20px",
-              background: "rgba(251, 191, 36, 0.12)",
-              color: "#fbbf24",
-              border: "1px solid rgba(251, 191, 36, 0.3)",
-              letterSpacing: "0.4px",
-              whiteSpace: "nowrap",
-            }}
-          >
-            Up to {maxMultiplier} Payout
-          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", justifyContent: "flex-end" }}>
+            <span
+              style={{
+                fontSize: "9.5px",
+                fontWeight: 900,
+                padding: "3px 8px",
+                borderRadius: "7px",
+                background: "rgba(251, 191, 36, 0.16)",
+                color: "#fbbf24",
+                border: "1px solid rgba(251, 191, 36, 0.4)",
+                letterSpacing: "0.5px",
+                textTransform: "uppercase",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "4px",
+                whiteSpace: "nowrap",
+              }}
+            >
+              <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#fbbf24", boxShadow: "0 0 6px #fbbf24" }} />
+              HIGH PAYOUT
+            </span>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+              {colorOptions.map((c, i) => (
+                <React.Fragment key={c.id}>
+                  {i > 0 && <span style={{ color: "#475569", fontSize: "10px" }}>·</span>}
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: 800,
+                      color: c.solid,
+                      textShadow: `0 0 8px rgba(${c.glow || '255,255,255'}, 0.5)`,
+                      letterSpacing: "0.3px",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {c.label}: {c.mult}
+                  </span>
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Dynamic Radiant Join Buttons */}
@@ -1457,25 +1516,69 @@ export const ColourGame = ({ colors: propColors } = {}) => {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: "6px",
+              gap: "8px",
             }}
           >
-            <div style={{ display: "flex", gap: "8px", fontSize: "20px" }}>
-              <span>🟢</span>
-              <span>🟣</span>
-              <span>🔴</span>
+            {/* Luminous 3D Glossy Color Spheres */}
+            <div style={{ display: "flex", gap: "12px", alignItems: "center", marginBottom: "2px" }}>
+              {colorOptions.map((c) => (
+                <div
+                  key={c.id}
+                  style={{
+                    width: 20,
+                    height: 20,
+                    borderRadius: "50%",
+                    background: c.grad || c.solid,
+                    boxShadow: `0 0 14px rgba(${c.glow || '255,255,255'}, 0.85), inset 0 2px 4px rgba(255,255,255,0.7), inset 0 -2px 3px rgba(0,0,0,0.5)`,
+                    border: '1.5px solid rgba(255, 255, 255, 0.45)',
+                    transition: 'all 0.3s ease',
+                  }}
+                  title={c.label}
+                />
+              ))}
             </div>
+
             <span
               style={{ fontSize: "13px", fontWeight: 800, color: "#cbd5e1" }}
             >
-              Tap <strong style={{ color: "#00e676" }}>Join Green</strong>,{" "}
-              <strong style={{ color: "#e040fb" }}>Join Violet</strong>, or{" "}
-              <strong style={{ color: "#ff1744" }}>Join Red</strong> to start
-              betting!
+              Tap{" "}
+              {colorOptions.map((c, i) => (
+                <React.Fragment key={c.id}>
+                  {i > 0 && (i === colorOptions.length - 1 ? ", or " : ", ")}
+                  <strong
+                    style={{
+                      color: c.solid,
+                      textShadow: `0 0 10px rgba(${c.glow || '255,255,255'}, 0.5)`,
+                    }}
+                  >
+                    {c.actionText || `Join ${c.label}`}
+                  </strong>
+                </React.Fragment>
+              ))}{" "}
+              to start betting!
             </span>
-            <span style={{ fontSize: "10.5px", color: "#64748b" }}>
-              Green & Red pay 2.0× · Violet pays 4.5× Super Jackpot
-            </span>
+
+            <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap", justifyContent: "center" }}>
+              {colorOptions.map((c, i) => (
+                <React.Fragment key={c.id}>
+                  {i > 0 && <span style={{ color: "#475569", fontSize: "11px" }}>·</span>}
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: 800,
+                      color: c.solid,
+                      letterSpacing: "0.3px",
+                      background: `rgba(${c.glow || '255,255,255'}, 0.1)`,
+                      padding: "2px 8px",
+                      borderRadius: "6px",
+                      border: `1px solid rgba(${c.glow || '255,255,255'}, 0.25)`,
+                    }}
+                  >
+                    {c.label}: {c.mult}
+                  </span>
+                </React.Fragment>
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -1574,8 +1677,8 @@ export const ColourGame = ({ colors: propColors } = {}) => {
                 history.map((r, i) => {
                   const colors = r.result?.colors || [];
                   const main = colors[0] || "GREEN";
-                  const c = COLOR_MAP[main];
-                  const bg = resultGrad(colors);
+                  const c = activeColorMap[main] || COLOR_MAP[main];
+                  const bg = resultGrad(colors, activeColorMap);
                   const isLatest = i === 0;
 
                   return (
