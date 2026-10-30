@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useNotifications } from '../context/NotificationContext.jsx';
+import { useSiteConfig } from '../context/SiteConfigContext.jsx';
 import {
   Crown,
   Search,
@@ -49,6 +50,7 @@ export const Header = ({
     demoLogin,
   } = useAuth();
   const { openNotificationModal, unreadCount } = useNotifications();
+  const { siteName, tagline } = useSiteConfig();
   const [soundEnabled, setSoundEnabled] = useState(true);
 
   const toggleSound = () => {
@@ -133,7 +135,7 @@ export const Header = ({
                   filter: 'drop-shadow(0 0 8px rgba(251,191,36,0.4))',
                 }}
               >
-                LuckyPlay
+                {siteName}
               </div>
               <div
                 style={{
@@ -146,7 +148,7 @@ export const Header = ({
                   whiteSpace: 'nowrap',
                 }}
               >
-                Play · Enjoy · Win
+                {tagline}
               </div>
             </div>
           </div>
@@ -459,7 +461,7 @@ export const Header = ({
                 flexShrink: 0,
                 boxShadow: '0 4px 14px rgba(0, 0, 0, 0.35), inset 0 1px 1px rgba(255,255,255,0.08)',
               }}
-              title="LuckyPlay Wallet & Bankroll"
+              title={`${siteName} Wallet & Bankroll`}
             >
               <Wallet size={16} color="#38bdf8" style={{ filter: 'drop-shadow(0 0 6px #38bdf8)' }} />
               <span

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSiteConfig } from '../context/SiteConfigContext.jsx';
 import {
   Shield,
   Lock,
@@ -23,6 +24,7 @@ import { useNavigate } from 'react-router-dom';
 
 export const Footer = () => {
   const navigate = useNavigate();
+  const { siteName, copyrightText } = useSiteConfig();
   const [legalModalType, setLegalModalType] = useState(null);
 
   const openLegalModal = (type) => {
@@ -75,7 +77,7 @@ export const Footer = () => {
                 </div>
                 <div>
                   <div style={{ fontWeight: 900, color: '#f8fafc', fontSize: '17px', letterSpacing: '-0.3px', lineHeight: 1.2 }}>
-                    LuckyPlay
+                    {siteName}
                   </div>
                   <div style={{ fontSize: '11px', color: '#ffb800', fontWeight: 700 }}>
                     Provably Fair Gaming Simulation
@@ -233,7 +235,7 @@ export const Footer = () => {
           {/* 3. Bottom Row: Copyright & Simulation Affirmation */}
           <div className="footer-bottom-row">
             <div className="footer-bottom-copy">
-              © 2026 LuckyPlay Gaming Platform. Strictly for experimental and educational testing.
+              {copyrightText}
             </div>
 
             <div className="footer-bottom-links">

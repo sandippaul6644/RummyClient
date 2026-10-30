@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
+import { useSiteConfig } from '../context/SiteConfigContext.jsx';
 import { api } from '../services/api.js';
 import { sound } from '../utils/sound.js';
 import confetti from 'canvas-confetti';
@@ -104,6 +105,7 @@ export const WalletModal = () => {
     setIsAuthModalOpen,
   } = useAuth();
 
+  const { siteName } = useSiteConfig();
   const [activeTab, setActiveTab] = useState('overview');
   const [copiedId, setCopiedId] = useState(false);
 
@@ -406,7 +408,7 @@ export const WalletModal = () => {
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#f8fafc', letterSpacing: '-0.3px' }}>
-                  LuckyPlay Wallet
+                  {siteName} Wallet
                 </h3>
                 <span
                   style={{

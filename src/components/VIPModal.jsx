@@ -1,9 +1,11 @@
 import React from 'react';
 import { Crown, Star, ShieldCheck, Zap, Gift, X, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
+import { useSiteConfig } from '../context/SiteConfigContext.jsx';
 
 export const VIPModal = ({ isOpen, onClose }) => {
   const { user } = useAuth();
+  const { siteName } = useSiteConfig();
   if (!isOpen) return null;
 
   const vipTiers = [
@@ -44,7 +46,7 @@ export const VIPModal = ({ isOpen, onClose }) => {
               <Crown size={22} color="#1e1402" />
             </div>
             <div>
-              <h2 style={{ fontSize: '20px', fontWeight: 900, color: '#fff' }}>LuckyPlay VIP Club</h2>
+              <h2 style={{ fontSize: '20px', fontWeight: 900, color: '#fff' }}>{siteName} VIP Club</h2>
               <p style={{ fontSize: '12px', color: '#94a3b8' }}>Exclusive perks, higher withdrawal limits & VIP cashback!</p>
             </div>
           </div>

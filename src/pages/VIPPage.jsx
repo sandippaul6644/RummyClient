@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, Crown, Star, ShieldCheck, Zap, Award } from 'lucide-react';
 import { sound } from '../utils/sound.js';
 import { useAuth } from '../context/AuthContext.jsx';
+import { useSiteConfig } from '../context/SiteConfigContext.jsx';
 
 export const VIPPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { siteName } = useSiteConfig();
 
   const tiers = [
     { level: 'Bronze', turnover: '₹0', cashback: '5%', color: '#cd7f32', perk: 'Daily Free Lucky Spin' },
@@ -61,7 +63,7 @@ export const VIPPage = () => {
       >
         <Crown size={36} color="#ffe066" style={{ filter: 'drop-shadow(0 0 12px rgba(255, 224, 102, 0.8))', marginBottom: '6px' }} />
         <h2 style={{ fontSize: '20px', fontWeight: 900, color: '#ffffff', margin: '0 0 4px' }}>
-          {user ? `Welcome VIP ${user.username}` : 'Join LuckyPlay VIP'}
+          {user ? `Welcome VIP ${user.username}` : `Join ${siteName} VIP`}
         </h2>
         <p style={{ fontSize: '12px', color: '#94a3b8', margin: '0 0 12px' }}>
           Wager to level up and unlock luxury bonuses & instant cashback
