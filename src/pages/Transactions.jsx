@@ -108,6 +108,7 @@ export const Transactions = () => {
     refreshWallet,
     setIsAuthModalOpen,
     setIsDepositModalOpen,
+    setIsWithdrawModalOpen,
     openWalletModal,
   } = useAuth();
 
@@ -137,6 +138,19 @@ export const Transactions = () => {
     if (user) {
       fetchTxs();
     }
+
+    const handleCashierUpdate = () => {
+      fetchTxs();
+    };
+
+    window.addEventListener('withdrawal:update', handleCashierUpdate);
+    window.addEventListener('deposit:update', handleCashierUpdate);
+    window.addEventListener('wallet:update', handleCashierUpdate);
+    return () => {
+      window.removeEventListener('withdrawal:update', handleCashierUpdate);
+      window.removeEventListener('deposit:update', handleCashierUpdate);
+      window.removeEventListener('wallet:update', handleCashierUpdate);
+    };
   }, [user]);
 
   // Auth Guard Card
@@ -411,7 +425,8 @@ export const Transactions = () => {
         <button
           onClick={() => {
             sound.playClick();
-            if (openWalletModal) openWalletModal('withdraw');
+            if (setIsWithdrawModalOpen) setIsWithdrawModalOpen(true);
+            else if (openWalletModal) openWalletModal('withdraw');
           }}
           style={{
             padding: '12px 14px',
@@ -730,22 +745,52 @@ export const Transactions = () => {
                       {meta.isCredit ? '+' : '-'} ₹{absAmount.toFixed(2)}
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span
-                        style={{
-                          fontSize: '9px',
-                          fontWeight: 800,
-                          padding: '2px 6px',
-                          borderRadius: '5px',
-                          background: t.status === 'failed' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.12)',
-                          color: t.status === 'failed' ? '#f87171' : '#34d399',
-                          border: `1px solid ${t.status === 'failed' ? 'rgba(239, 68, 68, 0.3)' : 'rgba(16, 185, 129, 0.25)'}`,
-                          letterSpacing: '0.4px',
-                          textTransform: 'uppercase',
-                        }}
-                      >
-                        {t.status || 'COMPLETED'}
-                      </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                      {t.referenceId && (
+                        <span style={{ fontSize: '9px', color: '#34d399', fontFamily: 'monospace', padding: '1px 5px', borderRadius: '4px', background: 'rgba(52, 211, 153, 0.1)', border: '1px solid rgba(52, 211, 153, 0.2)' }}>
+                          Ref: {t.referenceId}
+                        </span>
+                      )}
+                      {(() => {
+                        const st = (t.status || 'completed').toLowerCase();
+                        const isPending = st === 'pending';
+                        const isReversed = st === 'reversed' || st === 'failed';
+
+                        const stColor = isPending ? '#fbbf24' : isReversed ? '#f87171' : '#34d399';
+                        const stBg = isPending
+                          ? 'rgba(251, 191, 36, 0.15)'
+                          : isReversed
+                          ? 'rgba(239, 68, 68, 0.15)'
+                          : 'rgba(16, 185, 129, 0.12)';
+                        const stBorder = isPending
+                          ? 'rgba(251, 191, 36, 0.35)'
+                          : isReversed
+                          ? 'rgba(239, 68, 68, 0.35)'
+                          : 'rgba(16, 185, 129, 0.25)';
+                        const stLabel = isPending
+                          ? 'PENDING'
+                          : isReversed
+                          ? (t.type === 'withdrawal' ? 'REJECTED' : 'FAILED')
+                          : 'COMPLETED';
+
+                        return (
+                          <span
+                            style={{
+                              fontSize: '9px',
+                              fontWeight: 800,
+                              padding: '2px 7px',
+                              borderRadius: '6px',
+                              background: stBg,
+                              color: stColor,
+                              border: `1px solid ${stBorder}`,
+                              letterSpacing: '0.4px',
+                              textTransform: 'uppercase',
+                            }}
+                          >
+                            {stLabel}
+                          </span>
+                        );
+                      })()}
                     </div>
                   </div>
                 </div>

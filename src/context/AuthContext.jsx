@@ -29,6 +29,17 @@ export const AuthProvider = ({ children }) => {
     setIsWalletModalOpen(false);
   };
 
+  const joinUserRoom = useCallback((targetUser) => {
+    const u = targetUser || user;
+    if (!socket || !u) return;
+    const uid = u._id || u.id;
+    const currentToken = localStorage.getItem('nexus_token');
+    socket.emit('user:join', { userId: uid, token: currentToken });
+    if (currentToken) {
+      socket.emit('user:authenticate', { token: currentToken });
+    }
+  }, [user]);
+
   const fetchMe = useCallback(async () => {
     if (!token) {
       setLoading(false);
@@ -39,7 +50,7 @@ export const AuthProvider = ({ children }) => {
       if (res.data?.success) {
         setUser(res.data.data.user);
         setWallet(res.data.data.wallet);
-        socket.emit('user:join', { userId: res.data.data.user._id || res.data.data.user.id });
+        joinUserRoom(res.data.data.user);
       }
     } catch {
       localStorage.removeItem('nexus_token');
@@ -49,7 +60,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, [token, joinUserRoom]);
 
   useEffect(() => {
     fetchMe();
@@ -65,6 +76,81 @@ export const AuthProvider = ({ children }) => {
       console.error('Failed to refresh wallet:', err);
     }
   };
+
+  // Real-time socket synchronization for live balance & cashier updates
+  useEffect(() => {
+    if (!socket || !user) return;
+
+    // Join room immediately on mount or user change
+    joinUserRoom(user);
+
+    // Auto-rejoin on any socket reconnect
+    const onConnect = () => {
+      console.log('[AuthContext] Socket connected/reconnected — rejoining private user room');
+      joinUserRoom(user);
+      refreshWallet();
+    };
+
+    const onWalletUpdate = (data) => {
+      console.log('[AuthContext] Realtime wallet:update received:', data);
+      if (data && data.balance !== undefined) {
+        const newBal = Number(data.balance);
+        setWallet((prev) => ({
+          ...prev,
+          balance: newBal,
+          totalDeposited: data.totalDeposited !== undefined ? Number(data.totalDeposited) : prev?.totalDeposited,
+          totalWagered: data.totalWagered !== undefined ? Number(data.totalWagered) : prev?.totalWagered,
+          totalWon: data.totalWon !== undefined ? Number(data.totalWon) : prev?.totalWon,
+          totalWithdrawn: data.totalWithdrawn !== undefined ? Number(data.totalWithdrawn) : prev?.totalWithdrawn,
+        }));
+        window.dispatchEvent(new CustomEvent('wallet:update', { detail: data }));
+      }
+    };
+
+    const onWithdrawalUpdate = (data) => {
+      console.log('[AuthContext] Realtime withdrawal:update received:', data);
+      window.dispatchEvent(new CustomEvent('withdrawal:update', { detail: data }));
+      refreshWallet();
+    };
+
+    const onDepositUpdate = (data) => {
+      console.log('[AuthContext] Realtime deposit:update received:', data);
+      window.dispatchEvent(new CustomEvent('deposit:update', { detail: data }));
+      refreshWallet();
+      if (data?.status === 'APPROVED') {
+        sound.playWin?.();
+      }
+    };
+
+    const onNotificationNew = (notification) => {
+      if (notification?.type?.startsWith('withdrawal') || notification?.type?.startsWith('deposit')) {
+        refreshWallet();
+        window.dispatchEvent(new CustomEvent('withdrawal:update', { detail: notification }));
+        window.dispatchEvent(new CustomEvent('deposit:update', { detail: notification }));
+        if (notification?.type === 'deposit') {
+          sound.playWin?.();
+        }
+      }
+    };
+
+    socket.on('connect', onConnect);
+    socket.on('wallet:update', onWalletUpdate);
+    socket.on('user:balance', onWalletUpdate);
+    socket.on('withdrawal:update', onWithdrawalUpdate);
+    socket.on('deposit:update', onDepositUpdate);
+    socket.on('deposit:status', onDepositUpdate);
+    socket.on('notification:new', onNotificationNew);
+
+    return () => {
+      socket.off('connect', onConnect);
+      socket.off('wallet:update', onWalletUpdate);
+      socket.off('user:balance', onWalletUpdate);
+      socket.off('withdrawal:update', onWithdrawalUpdate);
+      socket.off('deposit:update', onDepositUpdate);
+      socket.off('deposit:status', onDepositUpdate);
+      socket.off('notification:new', onNotificationNew);
+    };
+  }, [user, joinUserRoom]);
 
   const login = async (usernameOrEmail, password) => {
     const res = await api.post('/auth/login', { usernameOrEmail, password });

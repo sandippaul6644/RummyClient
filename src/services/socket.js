@@ -5,12 +5,21 @@ const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || (typeof window !== 'undefi
 export const socket = io(SOCKET_URL, {
   autoConnect: true,
   reconnection: true,
-  reconnectionAttempts: 10,
+  reconnectionAttempts: 20,
   reconnectionDelay: 1000,
+  reconnectionDelayMax: 5000,
+  auth: (cb) => {
+    const token = typeof localStorage !== 'undefined' ? localStorage.getItem('nexus_token') : null;
+    cb({ token });
+  },
 });
 
 socket.on('connect', () => {
   console.log('[Socket] Connected to realtime server ID:', socket.id);
+  const token = typeof localStorage !== 'undefined' ? localStorage.getItem('nexus_token') : null;
+  if (token) {
+    socket.emit('user:authenticate', { token });
+  }
 });
 
 socket.on('disconnect', (reason) => {
