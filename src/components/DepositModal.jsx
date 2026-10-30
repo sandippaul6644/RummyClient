@@ -17,7 +17,7 @@ const showToast = (message, type = 'info') => {
 };
 
 export const DepositModal = () => {
-  const { isDepositModalOpen, setIsDepositModalOpen, refreshWallet, wallet } = useAuth();
+  const { isDepositModalOpen, setIsDepositModalOpen, refreshWallet, wallet, user, setIsAuthModalOpen } = useAuth();
   const [tab,        setTab]        = useState('upi');
   const [cfg,        setCfg]        = useState(null);
   const [activeQr,   setActiveQr]   = useState(null);
@@ -71,6 +71,42 @@ export const DepositModal = () => {
   };
 
   if (!isDepositModalOpen) return null;
+
+  if (!user) {
+    return (
+      <div className="modal-overlay" onClick={() => setIsDepositModalOpen(false)}>
+        <div
+          className="glass-panel modal-content"
+          style={{ width: '100%', maxWidth: '420px', padding: '28px 24px', textAlign: 'center', margin: 'auto', position: 'relative', borderRadius: '24px' }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            onClick={() => setIsDepositModalOpen(false)}
+            style={{ position: 'absolute', top: '16px', right: '16px', background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer' }}
+          >
+            <X size={18} />
+          </button>
+          <div
+            style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(0, 230, 118, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}
+          >
+            <ArrowDownLeft size={28} color="#00e676" />
+          </div>
+          <h3 style={{ fontSize: '20px', fontWeight: 900, color: '#fff', margin: '0 0 8px' }}>Sign In to Deposit</h3>
+          <p style={{ fontSize: '13px', color: '#94a3b8', margin: '0 0 20px', lineHeight: 1.5 }}>You must be logged in to deposit funds into your account.</p>
+          <button
+            onClick={() => {
+              setIsDepositModalOpen(false);
+              setIsAuthModalOpen(true);
+            }}
+            className="btn-primary btn-green"
+            style={{ width: '100%', padding: '12px', borderRadius: '12px', fontWeight: 800, cursor: 'pointer' }}
+          >
+            Log In / Sign Up
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const copyText = (text, key) => {
     navigator.clipboard.writeText(text);

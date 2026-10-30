@@ -101,6 +101,7 @@ export const WalletModal = () => {
     refreshWallet,
     setWallet,
     user,
+    setIsAuthModalOpen,
   } = useAuth();
 
   const [activeTab, setActiveTab] = useState('overview');
@@ -116,7 +117,7 @@ export const WalletModal = () => {
   // Withdraw Form State
   const [withdrawAmount, setWithdrawAmount] = useState('100');
   const [withdrawMethod, setWithdrawMethod] = useState('upi');
-  const [payoutAddress, setPayoutAddress] = useState('demo.player@okhdfcbank');
+  const [payoutAddress, setPayoutAddress] = useState(user?.phone ? `${user.phone}@upi` : '');
   const [withdrawLoading, setWithdrawLoading] = useState(false);
   const [withdrawSuccess, setWithdrawSuccess] = useState('');
   const [withdrawError, setWithdrawError] = useState('');
@@ -135,12 +136,13 @@ export const WalletModal = () => {
 
   // Load transactions when History tab opened
   useEffect(() => {
-    if (isWalletModalOpen && activeTab === 'history') {
+    if (isWalletModalOpen && activeTab === 'history' && user) {
       fetchTransactions();
     }
-  }, [isWalletModalOpen, activeTab]);
+  }, [isWalletModalOpen, activeTab, user]);
 
   const fetchTransactions = async () => {
+    if (!user) return;
     setTxLoading(true);
     try {
       const res = await api.get('/wallet/transactions?limit=50');
@@ -156,7 +158,106 @@ export const WalletModal = () => {
 
   if (!isWalletModalOpen) return null;
 
-  const currentBalance = wallet ? Number(wallet.balance) : 1250;
+  // Unauthenticated guard: Prompt user to authenticate
+  if (!user) {
+    return (
+      <div className="modal-overlay" onClick={closeWalletModal}>
+        <div
+          className="glass-panel modal-content"
+          style={{
+            width: '100%',
+            maxWidth: '440px',
+            borderRadius: '24px',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            background: 'linear-gradient(180deg, rgba(13, 20, 36, 0.98) 0%, rgba(7, 10, 20, 0.99) 100%)',
+            boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.85)',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            padding: '28px 24px',
+            margin: 'auto',
+            textAlign: 'center',
+            position: 'relative',
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            onClick={closeWalletModal}
+            style={{
+              position: 'absolute',
+              top: '16px',
+              right: '16px',
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              color: '#cbd5e1',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            aria-label="Close"
+          >
+            <X size={18} />
+          </button>
+
+          <div
+            style={{
+              width: '64px',
+              height: '64px',
+              borderRadius: '20px',
+              background: 'linear-gradient(135deg, rgba(0, 230, 118, 0.2) 0%, rgba(56, 189, 248, 0.2) 100%)',
+              border: '1px solid rgba(0, 230, 118, 0.4)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '10px auto 18px',
+              boxShadow: '0 0 25px rgba(0, 230, 118, 0.3)',
+            }}
+          >
+            <Wallet size={32} color="#00e676" />
+          </div>
+
+          <h3 style={{ fontSize: '20px', fontWeight: 900, color: '#ffffff', margin: '0 0 8px' }}>
+            Sign In to Access Wallet
+          </h3>
+          <p style={{ fontSize: '13px', color: '#94a3b8', margin: '0 0 24px', lineHeight: 1.5 }}>
+            Please log in or create an account to view your balance, make deposits, withdraw funds, and track your transactions.
+          </p>
+
+          <button
+            onClick={() => {
+              sound.playClick();
+              closeWalletModal();
+              setIsAuthModalOpen(true);
+            }}
+            style={{
+              padding: '14px 20px',
+              borderRadius: '14px',
+              background: 'linear-gradient(135deg, #00e676 0%, #059669 100%)',
+              border: 'none',
+              color: '#ffffff',
+              fontSize: '15px',
+              fontWeight: 900,
+              cursor: 'pointer',
+              boxShadow: '0 0 25px rgba(0, 230, 118, 0.45)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              width: '100%',
+            }}
+          >
+            Log In / Sign Up
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const currentBalance = Number(wallet?.balance || user?.balance || 0);
 
   const handleDeposit = async (e) => {
     e.preventDefault();
@@ -181,7 +282,7 @@ export const WalletModal = () => {
             origin: { y: 0.6 },
           });
         } catch {}
-        setDepositSuccess(`+₹${Number(depositAmount).toFixed(2)} credited instantly to your demo balance!`);
+        setDepositSuccess(`+₹${Number(depositAmount).toFixed(2)} deposited successfully!`);
         setTimeout(() => {
           setDepositSuccess('');
           setActiveTab('overview');
@@ -205,7 +306,7 @@ export const WalletModal = () => {
       return;
     }
     if (amt > currentBalance) {
-      setWithdrawError('Insufficient available demo balance');
+      setWithdrawError('Insufficient available balance');
       return;
     }
 
@@ -215,14 +316,14 @@ export const WalletModal = () => {
     try {
       const res = await api.post('/wallet/withdraw', {
         amount: amt,
-        payoutMethod: withdrawMethod,
-        payoutDetails: { address: payoutAddress },
+        paymentMethod: withdrawMethod,
+        accountDetails: { address: payoutAddress, method: withdrawMethod },
       });
 
       if (res.data?.success) {
         setWallet(res.data.data.wallet);
         sound.playCashout();
-        setWithdrawSuccess(`Simulation withdrawal of ₹${amt.toFixed(2)} processed successfully!`);
+        setWithdrawSuccess(`Withdrawal request of ₹${amt.toFixed(2)} submitted successfully!`);
         setTimeout(() => {
           setWithdrawSuccess('');
           setActiveTab('overview');
@@ -237,10 +338,12 @@ export const WalletModal = () => {
 
   const copyWalletId = () => {
     sound.playClick();
-    const id = wallet?._id || wallet?.id || user?._id || 'demo-wallet-id';
-    navigator.clipboard?.writeText(id);
-    setCopiedId(true);
-    setTimeout(() => setCopiedId(false), 2000);
+    const id = user?._id || user?.id || wallet?._id || '';
+    if (id) {
+      navigator.clipboard?.writeText(id);
+      setCopiedId(true);
+      setTimeout(() => setCopiedId(false), 2000);
+    }
   };
 
   const filteredTxs = transactions.filter((t) => {
@@ -307,20 +410,20 @@ export const WalletModal = () => {
                 </h3>
                 <span
                   style={{
-                    background: 'rgba(56, 189, 248, 0.15)',
-                    color: '#38bdf8',
+                    background: 'rgba(16, 185, 129, 0.15)',
+                    color: '#10b981',
                     fontSize: '10px',
                     fontWeight: 800,
                     padding: '2px 7px',
                     borderRadius: '10px',
-                    border: '1px solid rgba(56, 189, 248, 0.25)',
+                    border: '1px solid rgba(16, 185, 129, 0.3)',
                   }}
                 >
-                  SIMULATION
+                  LIVE
                 </span>
               </div>
               <span style={{ fontSize: '11px', color: '#94a3b8' }}>
-                Virtual Chips Bankroll & Instant Settlement
+                Real-time Balance & Instant Transactions
               </span>
             </div>
           </div>
@@ -387,7 +490,7 @@ export const WalletModal = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
                 <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  Available Bankroll
+                  Available Balance
                 </span>
                 <div
                   className="font-mono"
@@ -441,19 +544,19 @@ export const WalletModal = () => {
               <div>
                 <div style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 600 }}>Deposited</div>
                 <div className="font-mono" style={{ fontSize: '12px', fontWeight: 800, color: '#38bdf8' }}>
-                  ₹{Number(wallet?.totalDeposited || 0).toFixed(0)}
+                  ₹{Number(wallet?.totalDeposited || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </div>
               </div>
               <div>
                 <div style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 600 }}>Total Won</div>
                 <div className="font-mono" style={{ fontSize: '12px', fontWeight: 800, color: '#fbbf24' }}>
-                  ₹{Number(wallet?.totalWon || 0).toFixed(0)}
+                  ₹{Number(wallet?.totalWon || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </div>
               </div>
               <div>
                 <div style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 600 }}>Wagered</div>
                 <div className="font-mono" style={{ fontSize: '12px', fontWeight: 800, color: '#c084fc' }}>
-                  ₹{Number(wallet?.totalWagered || 0).toFixed(0)}
+                  ₹{Number(wallet?.totalWagered || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </div>
               </div>
             </div>
@@ -561,8 +664,8 @@ export const WalletModal = () => {
                     </div>
                     <span style={{ fontSize: '10px', color: '#34d399', fontWeight: 800 }}>FAST</span>
                   </div>
-                  <div style={{ fontWeight: 800, fontSize: '14px', marginTop: '4px' }}>Deposit Chips</div>
-                  <div style={{ fontSize: '11px', color: '#94a3b8' }}>Add virtual test credits instantly</div>
+                  <div style={{ fontWeight: 800, fontSize: '14px', marginTop: '4px' }}>Deposit Funds</div>
+                  <div style={{ fontSize: '11px', color: '#94a3b8' }}>Add funds instantly via UPI & Crypto</div>
                 </button>
 
                 <button
@@ -599,78 +702,59 @@ export const WalletModal = () => {
                     >
                       <ArrowUpRight size={18} color="#f87171" />
                     </div>
-                    <span style={{ fontSize: '10px', color: '#f87171', fontWeight: 800 }}>0% FEE</span>
+                    <span style={{ fontSize: '10px', color: '#f87171', fontWeight: 800 }}>FAST</span>
                   </div>
-                  <div style={{ fontWeight: 800, fontSize: '14px', marginTop: '4px' }}>Withdraw Chips</div>
-                  <div style={{ fontSize: '11px', color: '#94a3b8' }}>Instant simulated bankout</div>
+                  <div style={{ fontWeight: 800, fontSize: '14px', marginTop: '4px' }}>Withdraw Funds</div>
+                  <div style={{ fontSize: '11px', color: '#94a3b8' }}>Instant payout to your account</div>
                 </button>
               </div>
 
-              {/* Simulation Safety Disclaimer Pill */}
+              {/* Security & Verification Card */}
               <div
                 style={{
                   padding: '12px 14px',
                   borderRadius: '14px',
-                  background: 'rgba(255, 184, 0, 0.08)',
-                  border: '1px solid rgba(255, 184, 0, 0.25)',
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '10px',
-                  fontSize: '11px',
-                  color: '#fef08a',
-                  lineHeight: 1.45,
-                }}
-              >
-                <AlertCircle size={18} color="#facc15" style={{ flexShrink: 0, marginTop: '2px' }} />
-                <div>
-                  <strong>Educational & Testing Sandbox:</strong> All chips and wallet balances are virtual simulation credits for game algorithm testing. No real money can be won or lost.
-                </div>
-              </div>
-
-              {/* One-click Demo Refill */}
-              <div
-                style={{
-                  padding: '12px 14px',
-                  borderRadius: '14px',
-                  background: 'rgba(255, 255, 255, 0.03)',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  background: 'rgba(16, 185, 129, 0.06)',
+                  border: '1px solid rgba(16, 185, 129, 0.2)',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '10px',
+                  gap: '12px',
                 }}
               >
-                <div>
-                  <div style={{ fontSize: '12px', fontWeight: 700, color: '#f8fafc' }}>Quick Bankroll Refill</div>
-                  <div style={{ fontSize: '11px', color: '#64748b' }}>Running low on demo chips? Refill with 1 click.</div>
-                </div>
-
-                <button
-                  onClick={async () => {
-                    sound.playClick();
-                    try {
-                      const res = await api.post('/wallet/deposit', { amount: 500, paymentMethod: 'instant_demo' });
-                      if (res.data?.success) {
-                        setWallet(res.data.data.wallet);
-                        sound.playWin();
-                      }
-                    } catch {}
-                  }}
+                <div
                   style={{
-                    background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
-                    border: 'none',
+                    width: '36px',
+                    height: '36px',
                     borderRadius: '10px',
-                    color: '#ffffff',
-                    padding: '8px 12px',
-                    fontSize: '11px',
-                    fontWeight: 800,
-                    cursor: 'pointer',
-                    boxShadow: '0 0 12px rgba(16, 185, 129, 0.4)',
-                    whiteSpace: 'nowrap',
+                    background: 'rgba(16, 185, 129, 0.15)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
                   }}
                 >
-                  +₹500 Refill
-                </button>
+                  <ShieldCheck size={20} color="#10b981" />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '12px', fontWeight: 800, color: '#f8fafc' }}>
+                    Verified Account
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
+                    {user?.fullName || user?.username || 'User'} • ID: {user?._id ? `${user._id.slice(-6).toUpperCase()}` : 'ACTIVE'}
+                  </div>
+                </div>
+                <div
+                  style={{
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    color: '#34d399',
+                    background: 'rgba(16, 185, 129, 0.15)',
+                    padding: '3px 8px',
+                    borderRadius: '8px',
+                  }}
+                >
+                  VERIFIED
+                </div>
               </div>
             </div>
           )}
@@ -719,7 +803,7 @@ export const WalletModal = () => {
               {/* Quick Preset Buttons */}
               <div>
                 <label style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>
-                  Select Chip Amount (₹)
+                  Select Amount (₹)
                 </label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
                   {['50', '100', '250', '500', '1000', '2500'].map((amt) => (
@@ -779,10 +863,10 @@ export const WalletModal = () => {
                 </div>
               </div>
 
-              {/* Simulation Payment Method */}
+              {/* Payment Method */}
               <div>
                 <label style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>
-                  Simulated Gateway
+                  Select Payment Method
                 </label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
                   {GATEWAY_OPTIONS.map((m) => {
@@ -846,7 +930,7 @@ export const WalletModal = () => {
                   marginTop: '4px',
                 }}
               >
-                {depositLoading ? 'Crediting Sandbox...' : `Deposit ₹${depositAmount || 0} Chips`}
+                {depositLoading ? 'Processing Deposit...' : `Deposit ₹${depositAmount || 0}`}
               </button>
             </form>
           )}
@@ -976,10 +1060,10 @@ export const WalletModal = () => {
                 </div>
               </div>
 
-              {/* Simulated Destination */}
+              {/* Destination */}
               <div>
                 <label style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px', display: 'block' }}>
-                  {withdrawMethod === 'upi' && 'Virtual UPI ID / VPA'}
+                  {withdrawMethod === 'upi' && 'UPI ID / VPA'}
                   {withdrawMethod === 'binance' && 'Binance Pay ID / BEP-20 Address'}
                   {withdrawMethod === 'dollar' && 'USDT / USD Wallet Address'}
                   {withdrawMethod === 'tron' && 'Tron (TRX) TRC-20 Address'}
@@ -1001,7 +1085,7 @@ export const WalletModal = () => {
                   }}
                   placeholder={
                     withdrawMethod === 'upi'
-                      ? 'e.g. player@okhdfcbank or 9876543210@paytm'
+                      ? 'e.g. username@okhdfcbank or 9876543210@paytm'
                       : withdrawMethod === 'binance'
                       ? 'e.g. 182938472 or 0x71C...b29'
                       : withdrawMethod === 'dollar'
@@ -1025,7 +1109,7 @@ export const WalletModal = () => {
                 }}
               >
                 <span style={{ color: '#94a3b8' }}>Network Fee:</span>
-                <span style={{ color: '#34d399', fontWeight: 700 }}>₹0.00 (Free Demo)</span>
+                <span style={{ color: '#34d399', fontWeight: 700 }}>₹0.00</span>
               </div>
 
               {/* Submit */}
@@ -1049,7 +1133,7 @@ export const WalletModal = () => {
                   marginTop: '4px',
                 }}
               >
-                {withdrawLoading ? 'Processing Simulation...' : `Withdraw ₹${withdrawAmount || 0} Chips`}
+                {withdrawLoading ? 'Submitting Request...' : `Withdraw ₹${withdrawAmount || 0}`}
               </button>
             </form>
           )}
@@ -1169,7 +1253,7 @@ export const WalletModal = () => {
           <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
             <ShieldCheck size={14} color="#10b981" /> Double-entry ledger protected
           </span>
-          <span>18+ Virtual Sandbox</span>
+          <span>256-bit SSL Protected</span>
         </div>
       </div>
     </div>

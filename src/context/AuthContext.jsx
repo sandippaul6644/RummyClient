@@ -17,6 +17,10 @@ export const AuthProvider = ({ children }) => {
   const [walletModalTab, setWalletModalTab] = useState('overview');
 
   const openWalletModal = (tab = 'overview') => {
+    if (!user) {
+      setIsAuthModalOpen(true);
+      return;
+    }
     setWalletModalTab(tab);
     setIsWalletModalOpen(true);
   };

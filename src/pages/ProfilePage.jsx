@@ -278,7 +278,7 @@ export const ProfilePage = () => {
   const navigate = useNavigate();
   const { user, wallet, logout, setIsAuthModalOpen, setIsDepositModalOpen, setIsWithdrawModalOpen } = useAuth();
 
-  const balance = wallet ? Number(wallet.balance) : 1250;
+  const balance = Number(wallet?.balance || user?.balance || 0);
 
   return (
     <div style={{ maxWidth: '540px', margin: '0 auto', padding: '10px 12px 30px' }}>

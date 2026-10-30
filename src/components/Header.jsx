@@ -508,6 +508,10 @@ export const Header = ({
           <button
             onClick={() => {
               sound.playClick();
+              if (!user) {
+                setIsAuthModalOpen(true);
+                return;
+              }
               if (openWalletModal) openWalletModal('deposit');
               else setIsDepositModalOpen(true);
             }}

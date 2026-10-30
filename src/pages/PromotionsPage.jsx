@@ -1,21 +1,34 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, Gift, Sparkles, Crown, Star, ArrowRight, Zap, CheckCircle2 } from 'lucide-react';
 import { sound } from '../utils/sound.js';
 import { useAuth } from '../context/AuthContext.jsx';
+import { api } from '../services/api.js';
 
 export const PromotionsPage = () => {
   const navigate = useNavigate();
   const { user, setIsDepositModalOpen, setIsAuthModalOpen } = useAuth();
+  const [refConfig, setRefConfig] = useState(null);
+
+  useEffect(() => {
+    api.get('/auth/referral-config')
+      .then((res) => {
+        if (res.data?.success) setRefConfig(res.data.data);
+      })
+      .catch(() => {});
+  }, []);
+
+  const referralBonus = refConfig?.referralBonus ?? 100;
+  const signUpBonus = refConfig?.signUpBonus ?? 50;
 
   const promotions = [
     {
       id: 'welcome',
-      title: '100% Welcome Bonus up to ₹500',
+      title: `Welcome Bonus up to ₹${signUpBonus > 0 ? signUpBonus * 10 : 500}`,
       badge: 'NEW PLAYERS',
       badgeColor: '#ec4899',
-      desc: 'Double your first deposit instantly and get free spins on Golden Slots!',
-      tag: 'Code: WELCOME500',
+      desc: `Get instant sign-up bonus of ₹${signUpBonus} plus double chips on your first deposit!`,
+      tag: 'Instant Bonus',
       actionText: 'Claim Bonus',
       action: () => {
         sound.playClick();
@@ -54,15 +67,15 @@ export const PromotionsPage = () => {
         navigate('/vip');
       },
       gradient: 'linear-gradient(135deg, #064e3b 0%, #022c22 100%)',
-      borderColor: 'rgba(16, 185, 129, 0.45)',
+      borderColor: 'rgba(168, 85, 129, 0.45)',
     },
     {
       id: 'refer',
-      title: 'Refer a Friend & Earn ₹250',
+      title: `Refer a Friend & Earn ₹${referralBonus}`,
       badge: 'UNLIMITED',
       badgeColor: '#38bdf8',
-      desc: 'Get ₹250 instantly when your friend deposits + 5% lifetime revenue share on every wager.',
-      tag: 'Instant Bank Payout',
+      desc: `Get ₹${referralBonus} instantly for every qualifying friend you invite!`,
+      tag: 'Instant Cash Reward',
       actionText: 'Invite Friends',
       action: () => {
         sound.playClick();

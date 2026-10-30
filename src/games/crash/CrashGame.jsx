@@ -312,14 +312,14 @@ export const CrashGame = () => {
 
     const getDims = () => {
       const rect = canvas.getBoundingClientRect();
-      const W = rect.width;
-      const H = rect.height;
+      const W = Math.max(rect.width || canvas.width || 320, 120);
+      const H = Math.max(rect.height || canvas.height || 240, 100);
       const PAD_L = 36;
       const PAD_B = 28;
       const PAD_T = 24;
       const PAD_R = 36;
-      const cW = W - PAD_L - PAD_R;
-      const cH = H - PAD_T - PAD_B;
+      const cW = Math.max(20, W - PAD_L - PAD_R);
+      const cH = Math.max(20, H - PAD_T - PAD_B);
       return { W, H, PAD_L, PAD_B, PAD_T, PAD_R, cW, cH };
     };
 
@@ -474,6 +474,7 @@ export const CrashGame = () => {
 
     const draw = () => {
       const { W, H, PAD_L, PAD_B, PAD_T, PAD_R, cW, cH } = getDims();
+      if (!ctx || W <= 0 || H <= 0 || cW <= 0 || cH <= 0) return;
       ctx.clearRect(0, 0, W, H);
 
       // Deep atmospheric cosmic backdrop
@@ -484,14 +485,16 @@ export const CrashGame = () => {
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, W, H);
 
-      // Ambient radial climb glow
+      // Ambient radial climb glow (safe radius guards)
+      const glowR0 = 10;
+      const glowR1 = Math.max(30, cW * 0.8);
       const radialGlow = ctx.createRadialGradient(
         PAD_L + cW * 0.7,
         PAD_T + cH * 0.4,
-        20,
+        glowR0,
         PAD_L + cW * 0.7,
         PAD_T + cH * 0.4,
-        cW * 0.8
+        glowR1
       );
       radialGlow.addColorStop(0, 'rgba(225, 29, 72, 0.12)');
       radialGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
@@ -1046,13 +1049,36 @@ export const CrashGame = () => {
             </button>
           </div>
 
-          {wallet && (
+          {user && wallet ? (
             <div style={{ fontSize: '11.5px', color: '#94a3b8' }}>
               Balance:{' '}
               <strong style={{ color: '#fbbf24', fontSize: '13px' }}>
                 ₹{Number(wallet.balance || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
               </strong>
             </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                sound.playClick();
+                setIsAuthModalOpen?.(true);
+              }}
+              style={{
+                fontSize: '11px',
+                color: '#38bdf8',
+                fontWeight: 800,
+                background: 'rgba(56, 189, 248, 0.12)',
+                border: '1px solid rgba(56, 189, 248, 0.35)',
+                borderRadius: '8px',
+                padding: '3px 10px',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+              }}
+            >
+              <Lock size={11} /> Log in to play
+            </button>
           )}
         </div>
 
@@ -1152,9 +1178,27 @@ export const CrashGame = () => {
 
         {/* Giant Full-Width Action Button (Never Squeezed or Clipped!) */}
         {(!hasBet || phase === 'WAITING' || phase === 'CRASHED') && (() => {
+          if (!user) {
+            return (
+              <button
+                type="button"
+                onClick={() => {
+                  sound.playClick();
+                  setIsAuthModalOpen?.(true);
+                }}
+                className="aviator-hero-action-btn btn-auth-prompt"
+              >
+                <Lock size={19} />
+                <span style={{ fontSize: '16px', fontWeight: 900 }}>
+                  LOG IN / SIGN UP TO PLAY
+                </span>
+              </button>
+            );
+          }
+
           const currentBal = Number(wallet?.balance ?? user?.balance ?? 0);
           const currentBetAmt = parseFloat(betInput) || 10;
-          const isInsufficient = Boolean(user && currentBal < currentBetAmt);
+          const isInsufficient = Boolean(currentBal < currentBetAmt);
 
           return (
             <button

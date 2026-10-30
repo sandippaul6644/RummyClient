@@ -32,7 +32,7 @@ const METHODS = {
 };
 
 export const WithdrawModal = () => {
-  const { isWithdrawModalOpen, setIsWithdrawModalOpen, wallet, refreshWallet } = useAuth();
+  const { isWithdrawModalOpen, setIsWithdrawModalOpen, wallet, refreshWallet, user, setIsAuthModalOpen } = useAuth();
   const [step, setStep] = useState('amount'); // 'amount' | 'method' | 'confirm' | 'success'
   const [cfg, setCfg] = useState(null);
   const [method, setMethod] = useState('upi');
@@ -192,6 +192,42 @@ export const WithdrawModal = () => {
   };
 
   if (!isWithdrawModalOpen) return null;
+
+  if (!user) {
+    return (
+      <div className="modal-overlay" onClick={() => setIsWithdrawModalOpen(false)}>
+        <div
+          className="glass-panel modal-content"
+          style={{ width: '100%', maxWidth: '420px', padding: '28px 24px', textAlign: 'center', margin: 'auto', position: 'relative', borderRadius: '24px' }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            onClick={() => setIsWithdrawModalOpen(false)}
+            style={{ position: 'absolute', top: '16px', right: '16px', background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer' }}
+          >
+            <X size={18} />
+          </button>
+          <div
+            style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(239, 68, 68, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}
+          >
+            <ArrowUpRight size={28} color="#ef4444" />
+          </div>
+          <h3 style={{ fontSize: '20px', fontWeight: 900, color: '#fff', margin: '0 0 8px' }}>Sign In to Withdraw</h3>
+          <p style={{ fontSize: '13px', color: '#94a3b8', margin: '0 0 20px', lineHeight: 1.5 }}>You must be logged in to request a withdrawal.</p>
+          <button
+            onClick={() => {
+              setIsWithdrawModalOpen(false);
+              setIsAuthModalOpen(true);
+            }}
+            className="btn-primary"
+            style={{ width: '100%', padding: '12px', borderRadius: '12px', fontWeight: 800, background: 'linear-gradient(135deg, #00e676 0%, #059669 100%)', border: 'none', color: '#fff', cursor: 'pointer' }}
+          >
+            Log In / Sign Up
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const balance = wallet ? Number(wallet.balance) : 0;
   const minW = cfg?.withdrawalMinAmount || 100;

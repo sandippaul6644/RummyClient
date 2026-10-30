@@ -90,6 +90,10 @@ export const BottomNav = ({
           className={`bottom-nav-item ${isWalletActive ? 'active' : ''}`}
           onClick={() =>
             handleNavClick(() => {
+              if (!user) {
+                setIsAuthModalOpen(true);
+                return;
+              }
               if (openWalletModal) {
                 openWalletModal('overview');
               } else {

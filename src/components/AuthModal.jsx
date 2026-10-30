@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
-import { X, Sparkles, Shield, User, Lock, Mail, Phone, Tag, Eye, EyeOff } from 'lucide-react';
+import { X, Sparkles, Shield, User, Lock, Mail, Phone, Tag, Eye, EyeOff, Gift } from 'lucide-react';
 import { sound } from '../utils/sound.js';
+import { api } from '../services/api.js';
 
 // ── Password strength helper ──────────────────────────────────────────────────
 const getPasswordStrength = (pw) => {
@@ -74,12 +75,40 @@ export const AuthModal = () => {
   const [password,        setPassword]        = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [referralCode,    setReferralCode]    = useState('');
+  const [refConfig,       setRefConfig]       = useState(null);
 
   // UI state
   const [showPassword,        setShowPassword]        = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error,               setError]               = useState('');
   const [loading,             setLoading]             = useState(false);
+
+  // Auto-detect referral code from URL query param ?ref= and fetch promotional settings
+  useEffect(() => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlRef = urlParams.get('ref');
+      if (urlRef) {
+        const cleanRef = urlRef.trim().toUpperCase();
+        localStorage.setItem('pending_ref_code', cleanRef);
+        setReferralCode(cleanRef);
+        setIsRegister(true);
+      } else {
+        const savedRef = localStorage.getItem('pending_ref_code');
+        if (savedRef && !referralCode) {
+          setReferralCode(savedRef);
+        }
+      }
+    } catch (_) {}
+
+    api.get('/auth/referral-config')
+      .then((res) => {
+        if (res.data?.success && res.data.data) {
+          setRefConfig(res.data.data);
+        }
+      })
+      .catch(() => {});
+  }, [isAuthModalOpen]);
 
   if (!isAuthModalOpen) return null;
 
@@ -185,6 +214,45 @@ export const AuthModal = () => {
         {/* ── REGISTER FORM ── */}
         {isRegister ? (
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '13px' }}>
+            {/* Dynamic Sign-Up Welcome Bonus Banner */}
+            {refConfig?.enabled && Number(refConfig?.signUpBonus) > 0 && (
+              <div
+                style={{
+                  background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.18), rgba(5, 150, 105, 0.25))',
+                  border: '1.5px solid rgba(16, 185, 129, 0.45)',
+                  borderRadius: '14px',
+                  padding: '12px 14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  boxShadow: '0 4px 16px rgba(16, 185, 129, 0.15)',
+                }}
+              >
+                <div
+                  style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '10px',
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    boxShadow: '0 0 12px rgba(16, 185, 129, 0.6)',
+                  }}
+                >
+                  <Gift size={20} color="#fff" />
+                </div>
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: 900, color: '#34d399', letterSpacing: '-0.2px' }}>
+                    🎁 ₹{refConfig.signUpBonus} Instant Welcome Bonus!
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#cbd5e1', marginTop: '2px' }}>
+                    Sign up now to get ₹{refConfig.signUpBonus} free cash instantly added to your wallet.
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Full Name */}
             <div>
