@@ -633,7 +633,8 @@ export const WalletModal = () => {
                 <button
                   onClick={() => {
                     sound.playClick();
-                    setActiveTab('deposit');
+                    setIsWalletModalOpen(false);
+                    setIsDepositModalOpen(true);
                   }}
                   style={{
                     padding: '14px',

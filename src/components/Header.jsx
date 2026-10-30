@@ -480,12 +480,16 @@ export const Header = ({
               </span>
 
               {/* Vibrant Green "+" Deposit Button */}
-              <div
+              <button
+                type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   sound.playClick();
-                  if (openWalletModal) openWalletModal('deposit');
-                  else setIsDepositModalOpen(true);
+                  if (!user) {
+                    setIsAuthModalOpen(true);
+                    return;
+                  }
+                  setIsDepositModalOpen(true);
                 }}
                 style={{
                   background: 'linear-gradient(135deg, #00e676 0%, #059669 100%)',
@@ -493,17 +497,28 @@ export const Header = ({
                   width: '26px',
                   height: '26px',
                   borderRadius: '9px',
+                  border: 'none',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   boxShadow: '0 0 12px rgba(0, 230, 118, 0.65)',
                   flexShrink: 0,
-                  fontWeight: 900,
+                  cursor: 'pointer',
+                  padding: 0,
+                  transition: 'transform 0.15s ease, box-shadow 0.15s ease',
                 }}
-                title="Deposit Virtual Chips"
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.1)';
+                  e.currentTarget.style.boxShadow = '0 0 16px rgba(0, 230, 118, 0.9)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.boxShadow = '0 0 12px rgba(0, 230, 118, 0.65)';
+                }}
+                title="Deposit Funds (UPI, QR, TRX)"
               >
                 <Plus size={16} strokeWidth={3.5} />
-              </div>
+              </button>
             </div>
           )}
 
@@ -515,8 +530,7 @@ export const Header = ({
                 setIsAuthModalOpen(true);
                 return;
               }
-              if (openWalletModal) openWalletModal('deposit');
-              else setIsDepositModalOpen(true);
+              setIsDepositModalOpen(true);
             }}
             className="btn-primary btn-green mobile-hide"
             style={{

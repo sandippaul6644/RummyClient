@@ -1,18 +1,44 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { ColourGame } from '../games/colour/ColourGame.jsx';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import { sound } from '../utils/sound.js';
+import { socket } from '../services/socket.js';
+import { api } from '../services/api.js';
 
 export const ColorPredictionPage = () => {
   const navigate = useNavigate();
 
-  // Dynamic header colors synchronized from live ColourGame state
+  // Dynamic header colors synchronized from live ColourGame state & live backend API
   const [headerColors, setHeaderColors] = useState([
     { id: 'GREEN', solid: '#10b981', glow: '16,185,129' },
     { id: 'VIOLET', solid: '#a855f7', glow: '168,85,247' },
     { id: 'RED', solid: '#ef4444', glow: '239,68,68' },
   ]);
+
+  // Load colors immediately from API on mount + subscribe to live socket updates
+  useEffect(() => {
+    let isMounted = true;
+    api.get('/games/colour')
+      .then((res) => {
+        if (isMounted && res.data?.data?.colorOptions && Array.isArray(res.data.data.colorOptions)) {
+          setHeaderColors(res.data.data.colorOptions);
+        }
+      })
+      .catch(() => {});
+
+    const onConfigUpdate = (data) => {
+      if (data?.colorOptions && Array.isArray(data.colorOptions)) {
+        setHeaderColors(data.colorOptions);
+      }
+    };
+
+    socket.on('colour:config:updated', onConfigUpdate);
+    return () => {
+      isMounted = false;
+      socket.off('colour:config:updated', onConfigUpdate);
+    };
+  }, []);
 
   const handleBack = () => {
     sound.playClick();
@@ -95,52 +121,41 @@ export const ColorPredictionPage = () => {
         {/* Centre: Game title with dynamic dots and dynamic title gradient */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
               {headerColors.map((c) => (
                 <div
                   key={c.id || c.solid}
                   style={{
-                    width: 8,
-                    height: 8,
+                    width: 9,
+                    height: 9,
                     borderRadius: '50%',
-                    background: c.solid || '#10b981',
-                    boxShadow: `0 0 7px ${c.solid || '#10b981'}`,
+                    background: c.grad || c.solid || '#10b981',
+                    boxShadow: `0 0 9px ${c.solid || '#10b981'}, inset 0 1px 2px rgba(255,255,255,0.7)`,
+                    border: '1px solid rgba(255, 255, 255, 0.45)',
+                    transition: 'all 0.3s ease',
                   }}
                 />
               ))}
             </div>
-            <svg
-              viewBox="0 0 156 20"
+            <span
               style={{
-                height: '19px',
-                width: '150px',
+                fontSize: '16.5px',
+                fontWeight: 900,
+                letterSpacing: '0.4px',
+                backgroundImage: dynamicTitleGradient,
+                WebkitBackgroundImage: dynamicTitleGradient,
+                WebkitBackgroundClip: 'text',
+                backgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                color: 'transparent',
                 display: 'inline-block',
-                verticalAlign: 'middle',
-                overflow: 'visible',
+                lineHeight: 1.2,
+                fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.5))',
               }}
             >
-              <defs>
-                <linearGradient id="headerTitleDynamicGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  {headerColors.map((c, idx) => {
-                    const offset = headerColors.length > 1
-                      ? `${((idx / (headerColors.length - 1)) * 100).toFixed(0)}%`
-                      : '0%';
-                    return <stop key={c.id || idx} offset={offset} stopColor={c.solid || '#10b981'} />;
-                  })}
-                </linearGradient>
-              </defs>
-              <text
-                x="0"
-                y="15.5"
-                fill="url(#headerTitleDynamicGrad)"
-                fontSize="15.5"
-                fontWeight="900"
-                letterSpacing="0.4"
-                fontFamily="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-              >
-                Colour Prediction
-              </text>
-            </svg>
+              Colour Prediction
+            </span>
           </div>
           <span style={{ fontSize: '9px', color: '#64748b', fontWeight: 700, letterSpacing: '0.8px', textTransform: 'uppercase', marginTop: '1px' }}>
             PROVABLY FAIR · HMAC-SHA256

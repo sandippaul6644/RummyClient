@@ -347,6 +347,7 @@ export const ColourGame = ({ colors: propColors, onColorsChange } = {}) => {
     socket.on("colour:config:updated", (data) => {
       if (data?.colorOptions && Array.isArray(data.colorOptions)) {
         setServerColorOptions(data.colorOptions);
+        onColorsChange?.(data.colorOptions);
       }
       if (data?.payoutConfig) {
         setPayoutConfig(data.payoutConfig);
@@ -950,11 +951,13 @@ export const ColourGame = ({ colors: propColors, onColorsChange } = {}) => {
                 type="button"
                 className={`colour-join-btn ${c.id.toLowerCase()} ${isSelected ? "active" : ""}`}
                 style={{
-                  ...(c.grad ? { background: c.grad } : {}),
-                  ...(c.solid && isSelected
+                  ...(c.grad ? { background: c.grad } : (c.solid ? { background: c.solid } : {})),
+                  ...(c.solid
                     ? {
-                        borderColor: "#ffffff",
-                        boxShadow: `0 0 35px rgba(${c.glow || "255,255,255"}, 0.95)`,
+                        borderColor: isSelected ? "#ffffff" : `rgba(${c.glow || "255,255,255"}, 0.7)`,
+                        boxShadow: isSelected
+                          ? `0 0 35px rgba(${c.glow || "255,255,255"}, 0.95)`
+                          : `0 8px 24px rgba(${c.glow || "0,0,0"}, 0.45)`,
                       }
                     : {}),
                 }}
@@ -1539,18 +1542,18 @@ export const ColourGame = ({ colors: propColors, onColorsChange } = {}) => {
             }}
           >
             {/* Luminous 3D Glossy Color Spheres */}
-            <div style={{ display: "flex", gap: "12px", alignItems: "center", marginBottom: "2px" }}>
+            <div style={{ display: "flex", gap: "14px", alignItems: "center", marginBottom: "4px" }}>
               {colorOptions.map((c) => (
                 <div
                   key={c.id}
                   style={{
-                    width: 20,
-                    height: 20,
+                    width: 22,
+                    height: 22,
                     borderRadius: "50%",
                     background: c.grad || c.solid,
-                    boxShadow: `0 0 14px rgba(${c.glow || '255,255,255'}, 0.85), inset 0 2px 4px rgba(255,255,255,0.7), inset 0 -2px 3px rgba(0,0,0,0.5)`,
-                    border: '1.5px solid rgba(255, 255, 255, 0.45)',
-                    transition: 'all 0.3s ease',
+                    boxShadow: `0 0 16px rgba(${c.glow || '255,255,255'}, 0.9), inset 0 3px 5px rgba(255,255,255,0.75), inset 0 -3px 4px rgba(0,0,0,0.5)`,
+                    border: '1.5px solid rgba(255, 255, 255, 0.55)',
+                    transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
                   }}
                   title={c.label}
                 />
@@ -1558,7 +1561,7 @@ export const ColourGame = ({ colors: propColors, onColorsChange } = {}) => {
             </div>
 
             <span
-              style={{ fontSize: "13px", fontWeight: 800, color: "#cbd5e1" }}
+              style={{ fontSize: "13.5px", fontWeight: 800, color: "#cbd5e1" }}
             >
               Tap{" "}
               {colorOptions.map((c, i) => (
@@ -1567,7 +1570,9 @@ export const ColourGame = ({ colors: propColors, onColorsChange } = {}) => {
                   <strong
                     style={{
                       color: c.solid,
-                      textShadow: `0 0 10px rgba(${c.glow || '255,255,255'}, 0.5)`,
+                      textShadow: `0 0 12px rgba(${c.glow || '255,255,255'}, 0.6)`,
+                      fontWeight: 900,
+                      transition: 'all 0.3s ease',
                     }}
                   >
                     {c.actionText || `Join ${c.label}`}
@@ -1577,20 +1582,22 @@ export const ColourGame = ({ colors: propColors, onColorsChange } = {}) => {
               to start betting!
             </span>
 
-            <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap", justifyContent: "center" }}>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap", justifyContent: "center" }}>
               {colorOptions.map((c, i) => (
                 <React.Fragment key={c.id}>
-                  {i > 0 && <span style={{ color: "#475569", fontSize: "11px" }}>·</span>}
+                  {i > 0 && <span style={{ color: "#64748b", fontSize: "11px" }}>·</span>}
                   <span
                     style={{
-                      fontSize: "11px",
+                      fontSize: "11.5px",
                       fontWeight: 800,
                       color: c.solid,
                       letterSpacing: "0.3px",
-                      background: `rgba(${c.glow || '255,255,255'}, 0.1)`,
-                      padding: "2px 8px",
-                      borderRadius: "6px",
-                      border: `1px solid rgba(${c.glow || '255,255,255'}, 0.25)`,
+                      background: `rgba(${c.glow || '255,255,255'}, 0.12)`,
+                      padding: "3px 9px",
+                      borderRadius: "7px",
+                      border: `1px solid rgba(${c.glow || '255,255,255'}, 0.35)`,
+                      boxShadow: `0 0 10px rgba(${c.glow || '0,0,0'}, 0.25)`,
+                      transition: 'all 0.3s ease',
                     }}
                   >
                     {c.label}: {c.mult}
