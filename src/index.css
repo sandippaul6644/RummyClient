@@ -1,35 +1,42 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap');
 
 :root {
-  --bg-main: #0a0d14;
-  --bg-deep: #06080c;
-  --bg-card: rgba(16, 22, 34, 0.85);
-  --bg-card-hover: rgba(22, 30, 46, 0.95);
-  --bg-accent: rgba(30, 41, 59, 0.65);
-  --primary: #6366f1;
-  --primary-hover: #4f46e5;
-  --primary-glow: rgba(99, 102, 241, 0.4);
+  /* ── Las Vegas Neon Velvet Theme ── */
+  --bg-main: #0e0722;
+  --bg-deep: #080314;
+  --bg-card: rgba(30, 15, 56, 0.82);
+  --bg-card-hover: rgba(44, 22, 78, 0.92);
+  --bg-accent: rgba(62, 30, 108, 0.58);
+  --primary: #a855f7;
+  --primary-hover: #9333ea;
+  --primary-glow: rgba(168, 85, 247, 0.55);
   --gold-primary: #fbbf24;
   --gold-secondary: #f59e0b;
   --gold-gradient: linear-gradient(135deg, #fef08a 0%, #fbbf24 45%, #f59e0b 80%, #d97706 100%);
-  --gold-glow: rgba(251, 191, 36, 0.45);
+  --gold-glow: rgba(251, 191, 36, 0.6);
   --green: #10b981;
   --green-bright: #34d399;
   --green-gradient: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%);
-  --green-glow: rgba(16, 185, 129, 0.4);
+  --green-glow: rgba(16, 185, 129, 0.55);
   --red: #f43f5e;
   --red-gradient: linear-gradient(135deg, #fb7185 0%, #f43f5e 50%, #e11d48 100%);
-  --red-glow: rgba(244, 63, 94, 0.4);
-  --violet: #8b5cf6;
-  --violet-gradient: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 50%, #6366f1 100%);
-  --violet-glow: rgba(139, 92, 246, 0.4);
+  --red-glow: rgba(244, 63, 94, 0.55);
+  --violet: #a855f7;
+  --violet-gradient: linear-gradient(135deg, #ff4ef9 0%, #a855f7 50%, #7c3aed 100%);
+  --violet-glow: rgba(168, 85, 247, 0.55);
+  --cyan: #06b6d4;
+  --cyan-glow: rgba(6, 182, 212, 0.55);
+  --magenta: #ec4899;
+  --magenta-glow: rgba(236, 72, 153, 0.55);
   --blue: #0ea5e9;
   --blue-gradient: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 50%, #0284c7 100%);
   --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --border-glass: rgba(255, 255, 255, 0.08);
-  --border-gold: rgba(251, 191, 36, 0.35);
-  --border-glow: rgba(99, 102, 241, 0.35);
+  --text-muted: #c084fc;
+  --border-glass: rgba(216, 180, 254, 0.18);
+  --border-gold: rgba(251, 191, 36, 0.5);
+  --border-glow: rgba(168, 85, 247, 0.45);
+  --neon-border: 1px solid rgba(168, 85, 247, 0.38);
+  --neon-shadow: 0 10px 32px -4px rgba(0, 0, 0, 0.6), 0 0 24px rgba(168, 85, 247, 0.22);
   --radius-xl: 22px;
   --radius-lg: 16px;
   --radius-md: 12px;
@@ -63,17 +70,37 @@ svg {
 
 body {
   font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
-  background-color: var(--bg-main);
+  background-color: #0e0722;
   background-image:
-    radial-gradient(circle at 15% 0%, rgba(99, 102, 241, 0.12) 0%, transparent 45%),
-    radial-gradient(circle at 85% 10%, rgba(14, 165, 233, 0.09) 0%, transparent 40%),
-    radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.04) 0%, transparent 60%),
-    linear-gradient(180deg, #0a0d14 0%, #07090e 100%);
+    radial-gradient(circle at 12% 6%, rgba(236, 72, 153, 0.18) 0%, transparent 42%),
+    radial-gradient(circle at 88% 10%, rgba(6, 182, 212, 0.20) 0%, transparent 45%),
+    radial-gradient(circle at 50% 32%, rgba(168, 85, 247, 0.16) 0%, transparent 50%),
+    radial-gradient(circle at 18% 68%, rgba(251, 191, 36, 0.12) 0%, transparent 40%),
+    radial-gradient(circle at 82% 82%, rgba(236, 72, 153, 0.14) 0%, transparent 45%),
+    radial-gradient(circle at 50% 95%, rgba(16, 185, 129, 0.12) 0%, transparent 48%),
+    linear-gradient(180deg, #0e0722 0%, #150932 35%, #180a3a 65%, #090316 100%);
   background-attachment: fixed;
   color: var(--text-main);
   min-height: 100vh;
   overflow-x: hidden;
   width: 100%;
+}
+
+/* Neon Velvet Glow Animation */
+@keyframes neonPulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 32px rgba(236, 72, 153, 0.55), inset 0 1px 2px rgba(255, 255, 255, 0.5);
+  }
+}
+
+@keyframes neonBorderFlow {
+  0% { border-color: rgba(168, 85, 247, 0.5); }
+  33% { border-color: rgba(6, 182, 212, 0.5); }
+  66% { border-color: rgba(236, 72, 153, 0.5); }
+  100% { border-color: rgba(168, 85, 247, 0.5); }
 }
 
 /* Premium casino lobby */
@@ -1254,16 +1281,16 @@ main {
   pointer-events: auto;
   width: 100%;
   max-width: 540px;
-  background: rgba(13, 17, 26, 0.95);
+  background: rgba(26, 12, 52, 0.94);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1.5px solid rgba(168, 85, 247, 0.4);
   border-radius: 24px 24px 0 0;
   display: flex;
   align-items: flex-end;
   justify-content: space-around;
   padding: 6px 12px calc(8px + env(safe-area-inset-bottom, 8px));
-  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(99, 102, 241, 0.12);
+  box-shadow: 0 -10px 36px rgba(0, 0, 0, 0.75), 0 0 28px rgba(168, 85, 247, 0.25);
   box-sizing: border-box;
 }
 
@@ -1272,7 +1299,7 @@ main {
     max-width: 620px;
     margin-bottom: 12px;
     border-radius: 28px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(168, 85, 247, 0.35);
   }
 }
 
@@ -1505,27 +1532,33 @@ main {
   position: relative;
 }
 
-/* Cosmic Ambient Glow Behind Stadium */
+/* Las Vegas Neon Velvet Ambient Light Aura Behind Stadium */
 .colour-game-container::before {
   content: '';
   position: absolute;
-  top: 40px;
+  top: 30px;
   left: 50%;
   transform: translateX(-50%);
-  width: 90%;
-  height: 380px;
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.16) 0%, rgba(16, 185, 129, 0.1) 45%, rgba(239, 68, 68, 0.08) 70%, transparent 80%);
-  filter: blur(50px);
+  width: 95%;
+  height: 480px;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.25) 0%, rgba(236, 72, 153, 0.18) 35%, rgba(6, 182, 212, 0.14) 65%, transparent 80%);
+  filter: blur(60px);
   pointer-events: none;
   z-index: 0;
+  animation: neonAuraPulse 6s ease-in-out infinite alternate;
+}
+
+@keyframes neonAuraPulse {
+  0% { opacity: 0.7; transform: translateX(-50%) scale(0.98); }
+  100% { opacity: 1; transform: translateX(-50%) scale(1.02); }
 }
 
 .colour-top-card {
   position: relative;
   z-index: 1;
-  background: linear-gradient(145deg, rgba(20, 16, 38, 0.92) 0%, rgba(11, 15, 29, 0.94) 100%);
-  border: 1px solid rgba(168, 85, 247, 0.3);
-  box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.75), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  background: linear-gradient(145deg, rgba(34, 18, 66, 0.90) 0%, rgba(20, 10, 42, 0.94) 100%);
+  border: 1px solid rgba(168, 85, 247, 0.45);
+  box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.8), 0 0 28px rgba(168, 85, 247, 0.22), inset 0 1px 2px rgba(255, 255, 255, 0.25);
   padding: 16px 18px;
   display: flex;
   flex-direction: column;
@@ -1541,8 +1574,9 @@ main {
   top: 0;
   left: 0;
   right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent 0%, rgba(168, 85, 247, 0.8) 35%, rgba(0, 245, 155, 0.8) 65%, transparent 100%);
+  height: 2.5px;
+  background: linear-gradient(90deg, transparent 0%, #ec4899 25%, #a855f7 50%, #06b6d4 75%, transparent 100%);
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.8);
 }
 
 .colour-timer-box {
@@ -1550,9 +1584,9 @@ main {
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.75) 0%, rgba(30, 27, 75, 0.5) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.25);
+  background: linear-gradient(135deg, rgba(36, 18, 70, 0.85) 0%, rgba(22, 11, 46, 0.9) 100%);
+  border: 1px solid rgba(251, 191, 36, 0.38);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6), 0 0 16px rgba(251, 191, 36, 0.18);
   border-radius: 14px;
   padding: 10px 14px;
 }
@@ -1560,15 +1594,27 @@ main {
 .colour-betting-arena {
   position: relative;
   z-index: 1;
-  background: linear-gradient(145deg, rgba(17, 24, 43, 0.92) 0%, rgba(13, 17, 30, 0.96) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 20px 42px -10px rgba(0, 0, 0, 0.75), inset 0 1px 1px rgba(255, 255, 255, 0.18);
+  background: linear-gradient(145deg, rgba(34, 17, 66, 0.92) 0%, rgba(22, 11, 44, 0.96) 100%);
+  border: 1px solid rgba(216, 180, 254, 0.35);
+  box-shadow: 0 20px 48px -10px rgba(0, 0, 0, 0.8), 0 0 32px rgba(168, 85, 247, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.25);
   padding: 18px 16px;
   display: flex;
   flex-direction: column;
   gap: 14px;
   border-radius: 22px;
   backdrop-filter: blur(24px);
+  overflow: hidden;
+}
+
+.colour-betting-arena::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, #fbbf24 20%, #a855f7 50%, #06b6d4 80%, transparent 100%);
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.6);
 }
 
 .colour-color-grid {

@@ -39,38 +39,57 @@ export const ColorPredictionPage = () => {
   }, [headerColors]);
 
   return (
-    <div style={{ maxWidth: '720px', margin: '0 auto', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ maxWidth: '720px', margin: '0 auto', minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative' }}>
 
-      {/* ── Game sub-header bar ── */}
+      {/* Las Vegas Neon Velvet Ambient Light Pool */}
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '100%',
+          maxWidth: '800px',
+          height: '420px',
+          background: 'radial-gradient(circle at 50% 15%, rgba(168, 85, 247, 0.22) 0%, rgba(236, 72, 153, 0.16) 40%, rgba(6, 182, 212, 0.10) 70%, transparent 85%)',
+          filter: 'blur(60px)',
+          pointerEvents: 'none',
+          zIndex: 0,
+        }}
+      />
+
+      {/* ── Game sub-header bar (Neon Velvet Glass) ── */}
       <div style={{
         position: 'sticky',
         top: '60px',
         zIndex: 40,
-        background: 'rgba(10, 14, 24, 0.95)',
-        backdropFilter: 'blur(16px)',
-        borderBottom: '1px solid rgba(245, 158, 11, 0.25)',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
-        padding: '8px 12px',
+        background: 'rgba(24, 11, 46, 0.92)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderBottom: '1px solid rgba(168, 85, 247, 0.35)',
+        boxShadow: '0 8px 30px rgba(0,0,0,0.65), 0 0 20px rgba(168, 85, 247, 0.18)',
+        padding: '9px 14px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         gap: '10px',
       }}>
 
-        {/* Left: Back button */}
+        {/* Left: Back button with Neon Velvet glow */}
         <button onClick={handleBack}
           style={{
             display: 'inline-flex', alignItems: 'center', gap: '5px',
-            background: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: '9px',
-            color: '#cbd5e1',
-            padding: '5px 10px',
+            background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.22) 0%, rgba(236, 72, 153, 0.16) 100%)',
+            border: '1px solid rgba(168, 85, 247, 0.45)',
+            borderRadius: '10px',
+            color: '#f3e8ff',
+            padding: '6px 12px',
             fontSize: '12px', fontWeight: 800, cursor: 'pointer',
             flexShrink: 0,
-            transition: 'background 0.15s',
+            boxShadow: '0 0 14px rgba(168, 85, 247, 0.25)',
+            transition: 'all 0.2s ease',
           }}>
-          <ChevronLeft size={15} /> Back
+          <ChevronLeft size={16} /> Back
         </button>
 
         {/* Centre: Game title with dynamic dots and dynamic title gradient */}
@@ -128,22 +147,29 @@ export const ColorPredictionPage = () => {
           </span>
         </div>
 
-        {/* Right: Live badge */}
+        {/* Right: Live badge with Neon Emerald Halo */}
         <div style={{
-          display: 'flex', alignItems: 'center', gap: '5px',
-          background: 'rgba(16,185,129,0.14)',
-          border: '1px solid rgba(16,185,129,0.4)',
+          display: 'flex', alignItems: 'center', gap: '6px',
+          background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(6, 182, 212, 0.20) 100%)',
+          border: '1px solid rgba(52, 211, 153, 0.65)',
           borderRadius: '20px',
-          padding: '4px 9px',
+          padding: '5px 11px',
+          boxShadow: '0 0 16px rgba(16, 185, 129, 0.45)',
           flexShrink: 0,
         }}>
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#34d399', boxShadow: '0 0 6px #34d399', animation: 'pulse 1.5s infinite', display: 'inline-block' }}/>
-          <span style={{ fontSize: '10px', fontWeight: 900, color: '#34d399', whiteSpace: 'nowrap' }}>30s LIVE</span>
+          <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#34d399', boxShadow: '0 0 10px #34d399, 0 0 18px #10b981', animation: 'pulse 1.5s infinite', display: 'inline-block' }}/>
+          <span style={{ fontSize: '10.5px', fontWeight: 900, color: '#6ee7b7', letterSpacing: '0.4px', whiteSpace: 'nowrap' }}>30s LIVE</span>
         </div>
       </div>
 
-      {/* Dynamic top gradient divider */}
-      <div style={{ height: '2px', background: dynamicTitleGradient, opacity: 0.85 }}/>
+      {/* Dynamic top gradient divider with neon blur glow */}
+      <div style={{
+        height: '2.5px',
+        background: dynamicTitleGradient,
+        boxShadow: '0 0 12px rgba(168, 85, 247, 0.8), 0 0 24px rgba(236, 72, 153, 0.4)',
+        position: 'relative',
+        zIndex: 41,
+      }}/>
 
       {/* Game content with callback */}
       <div style={{ padding: '8px 10px 24px', flex: 1 }}>

@@ -471,6 +471,24 @@ export const ColourGame = ({ colors: propColors, onColorsChange } = {}) => {
 
   return (
     <div className="colour-game-container">
+      {/* Dynamic Ambient Neon Lighting that shifts with selected bet color */}
+      <div
+        style={{
+          position: "absolute",
+          top: "120px",
+          left: "50%",
+          transform: "translateX(-50%)",
+          width: "96%",
+          height: "450px",
+          background: selectedBet && selColor
+            ? `radial-gradient(circle, rgba(${selColor.glow || '168,85,247'}, 0.32) 0%, rgba(236, 72, 153, 0.16) 40%, transparent 72%)`
+            : "radial-gradient(circle, rgba(168, 85, 247, 0.22) 0%, rgba(236, 72, 153, 0.16) 35%, rgba(6, 182, 212, 0.12) 65%, transparent 75%)",
+          filter: "blur(60px)",
+          pointerEvents: "none",
+          zIndex: 0,
+          transition: "background 0.5s ease",
+        }}
+      />
       {/* ═══════════════════════════════════════════════════════════════
           1. TOP ROUND & CASINO DIGITAL COUNTDOWN HUD
       ═══════════════════════════════════════════════════════════════ */}
@@ -1505,18 +1523,19 @@ export const ColourGame = ({ colors: propColors, onColorsChange } = {}) => {
             })()}
           </div>
         ) : (
-          /* Empty Selection Guide Card */
+          /* Empty Selection Guide Card - Las Vegas Neon Velvet Pill */
           <div
             style={{
-              padding: "16px",
-              borderRadius: "16px",
-              background: "rgba(0, 0, 0, 0.25)",
-              border: "1px dashed rgba(255, 255, 255, 0.15)",
+              padding: "16px 14px",
+              borderRadius: "18px",
+              background: "linear-gradient(135deg, rgba(38, 18, 72, 0.7) 0%, rgba(24, 11, 48, 0.8) 100%)",
+              border: "1px solid rgba(168, 85, 247, 0.35)",
+              boxShadow: "0 8px 24px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 0 18px rgba(168, 85, 247, 0.12)",
               textAlign: "center",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: "8px",
+              gap: "10px",
             }}
           >
             {/* Luminous 3D Glossy Color Spheres */}
@@ -1588,19 +1607,20 @@ export const ColourGame = ({ colors: propColors, onColorsChange } = {}) => {
       ═══════════════════════════════════════════════════════════════ */}
       <div
         style={{
-          background: "rgba(15, 23, 42, 0.65)",
-          border: "1px solid rgba(255, 255, 255, 0.08)",
-          borderRadius: "18px",
+          background: "linear-gradient(145deg, rgba(32, 16, 62, 0.90) 0%, rgba(20, 10, 42, 0.95) 100%)",
+          border: "1px solid rgba(168, 85, 247, 0.38)",
+          boxShadow: "0 16px 40px rgba(0, 0, 0, 0.7), 0 0 24px rgba(168, 85, 247, 0.18), inset 0 1px 1px rgba(255, 255, 255, 0.18)",
+          borderRadius: "20px",
           overflow: "hidden",
-          backdropFilter: "blur(12px)",
+          backdropFilter: "blur(20px)",
         }}
       >
         {/* Tab Headers */}
         <div
           style={{
             display: "flex",
-            borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
-            background: "rgba(0, 0, 0, 0.2)",
+            borderBottom: "1px solid rgba(168, 85, 247, 0.25)",
+            background: "rgba(18, 8, 38, 0.65)",
           }}
         >
           {[
@@ -1620,13 +1640,13 @@ export const ColourGame = ({ colors: propColors, onColorsChange } = {}) => {
                 }}
                 style={{
                   flex: 1,
-                  padding: "11px 8px",
-                  background: "none",
+                  padding: "12px 8px",
+                  background: isActive ? "rgba(236, 72, 153, 0.12)" : "transparent",
                   border: "none",
                   borderBottom: isActive
-                    ? "2px solid #a855f7"
-                    : "2px solid transparent",
-                  color: isActive ? "#fff" : "#64748b",
+                    ? "2.5px solid #ec4899"
+                    : "2.5px solid transparent",
+                  color: isActive ? "#ffffff" : "#c084fc",
                   fontWeight: 800,
                   fontSize: "12.5px",
                   cursor: "pointer",
@@ -1634,19 +1654,21 @@ export const ColourGame = ({ colors: propColors, onColorsChange } = {}) => {
                   alignItems: "center",
                   justifyContent: "center",
                   gap: "6px",
-                  transition: "all 0.15s ease",
+                  transition: "all 0.2s ease",
+                  textShadow: isActive ? "0 0 10px rgba(236, 72, 153, 0.6)" : "none",
                 }}
               >
                 {label}
                 <span
                   style={{
                     fontSize: "9.5px",
-                    padding: "1px 6px",
+                    padding: "2px 7px",
                     borderRadius: "10px",
                     background: isActive
-                      ? "rgba(168, 85, 247, 0.25)"
-                      : "rgba(255, 255, 255, 0.05)",
-                    color: isActive ? "#c084fc" : "#64748b",
+                      ? "linear-gradient(135deg, rgba(236, 72, 153, 0.45) 0%, rgba(168, 85, 247, 0.45) 100%)"
+                      : "rgba(255, 255, 255, 0.08)",
+                    color: isActive ? "#ffffff" : "#c084fc",
+                    border: isActive ? "1px solid rgba(236, 72, 153, 0.55)" : "none",
                     fontWeight: 700,
                   }}
                 >
@@ -1667,7 +1689,7 @@ export const ColourGame = ({ colors: propColors, onColorsChange } = {}) => {
                   style={{
                     padding: "36px 16px",
                     textAlign: "center",
-                    color: "#64748b",
+                    color: "#c084fc",
                     fontSize: "12px",
                   }}
                 >
@@ -1689,11 +1711,11 @@ export const ColourGame = ({ colors: propColors, onColorsChange } = {}) => {
                         alignItems: "center",
                         gap: "12px",
                         padding: "10px 14px",
-                        borderBottom: "1px solid rgba(255, 255, 255, 0.04)",
+                        borderBottom: "1px solid rgba(168, 85, 247, 0.12)",
                         background: isLatest
-                          ? "rgba(168, 85, 247, 0.08)"
-                          : "transparent",
-                        borderLeft: `3px solid ${isLatest ? "#a855f7" : "transparent"}`,
+                          ? "linear-gradient(90deg, rgba(168, 85, 247, 0.18) 0%, rgba(236, 72, 153, 0.08) 100%)"
+                          : i % 2 === 0 ? "rgba(255, 255, 255, 0.015)" : "transparent",
+                        borderLeft: `3px solid ${isLatest ? "#ec4899" : "transparent"}`,
                       }}
                     >
                       <div

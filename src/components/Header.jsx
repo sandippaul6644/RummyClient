@@ -62,21 +62,22 @@ export const Header = ({
 
   return (
     <>
-      {/* ── Full-width sticky wrapper — background spans entire viewport ── */}
+      {/* ── Full-width sticky wrapper — Las Vegas Neon Velvet Glass ── */}
       <div style={{
         position: 'sticky',
         top: 0,
         zIndex: 60,
         width: '100%',
-        background: 'rgba(10, 13, 20, 0.94)',
+        background: 'rgba(20, 10, 42, 0.92)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        boxShadow: '0 1px 0 rgba(255,255,255,0.06), 0 8px 30px rgba(0,0,0,0.45)',
+        boxShadow: '0 1px 0 rgba(216, 180, 254, 0.15), 0 8px 32px rgba(0,0,0,0.65), 0 0 20px rgba(168, 85, 247, 0.15)',
       }}>
-        {/* Sleek Golden-Cyan Accent Stripe */}
+        {/* Las Vegas Neon Radiant Accent Stripe */}
         <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0, height: '2px',
-          background: 'linear-gradient(90deg, transparent 0%, rgba(99, 102, 241, 0.4) 20%, rgba(251, 191, 36, 0.75) 50%, rgba(16, 185, 129, 0.4) 80%, transparent 100%)',
+          position: 'absolute', bottom: 0, left: 0, right: 0, height: '2.5px',
+          background: 'linear-gradient(90deg, transparent 0%, rgba(236, 72, 153, 0.7) 20%, rgba(251, 191, 36, 0.9) 50%, rgba(6, 182, 212, 0.7) 80%, transparent 100%)',
+          boxShadow: '0 0 12px rgba(251, 191, 36, 0.6), 0 0 20px rgba(236, 72, 153, 0.4)',
         }}/>
 
         {/* Inner max-width container */}
